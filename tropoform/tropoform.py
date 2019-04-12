@@ -15,8 +15,8 @@ from boto3 import client
 
 # Get the default region from the environment variables if it exists
 default_region = None
-#if 'AWS_DEFAULT_REGION' in os.environ:
-#    default_region = os.environ['AWS_DEFAULT_REGION']
+if 'AWS_DEFAULT_REGION' in os.environ:
+    default_region = os.environ['AWS_DEFAULT_REGION']
 
 # Many cloud formation stacks require capability to add IAM resources. Set it by default
 default_capabilities = 'CAPABILITY_NAMED_IAM'
@@ -641,11 +641,10 @@ def destroy(stack_name, region=default_region, auto_approve=False):
     return True
 
 
-@begin.start(env_prefix='AWS_DEFAULT_')
+@begin.start
 @begin.logging
-def run():
+def run(operation):
     """
     Manages troposphere stack like terraform
     :return:
     """
-    pass

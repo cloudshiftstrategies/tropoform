@@ -6,7 +6,7 @@ with open("README.md", "r") as fh:
 setuptools.setup(
     name='tropoform',
     version='0.1',
-    scripts=['tropoform'] ,
+    scripts=['tropoform/tropoform.py'],
     author="Brian Peterson",
     author_email="brian.peterson@cloudshift.cc",
     description="A Terraform like utility for managing AWS Cloud Formation Stacks with troposphere",

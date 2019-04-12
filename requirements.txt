@@ -1,0 +1,4 @@
+boto3
+begins
+troposphere[policy]
+boto3_type_annotations

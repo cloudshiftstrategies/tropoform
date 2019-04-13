@@ -377,5 +377,5 @@ python3 -m unittest test
 python3 setup.py sdist bdist_wheel
 
 # Publish to PyPy
-twine upload --repository-url 
+twine upload --repository pypy /dist/tropoform-X.Y.Z*
 ```

@@ -1,6 +1,5 @@
 import unittest
 from tropoform import tropoform
-import logging
 import warnings
 import datetime
 import os

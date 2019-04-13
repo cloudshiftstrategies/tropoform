@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-import begin
 import boto3
 from datetime import datetime
 import time
@@ -8,9 +6,7 @@ import logging
 from botocore.exceptions import ClientError
 import os
 import sys
-
-# use the following when working in IDE and need auto completion
-# from boto3_type_annotations.cloudformation import Client as client
+import argparse
 from boto3 import client
 
 # Get the default region from the environment variables if it exists
@@ -26,11 +22,11 @@ logging.getLogger('botocore').setLevel(logging.WARNING)
 logging.getLogger('urllib3').setLevel(logging.INFO)
 
 
-def create_cfn_parameters(parameters) -> list:
+def create_cfn_parameters(parameters, **kwargs) -> list:
     """
-    Converts a dict of key/value pairs into cloudformation list of dicts
+    Converts a dict of key/value pairs into cloud formation list of dicts
     :parm dict parameters: parameters to be converted to cfn parameters
-    :return: list of dicts formatted for cloudformation Parameters
+    :return: list of dicts formatted for cloud formation Parameters
     """
     result = list()
     if not parameters:
@@ -40,25 +36,25 @@ def create_cfn_parameters(parameters) -> list:
     return result
 
 
-def get_cfn_client(region=default_region) -> boto3.client:
+def get_cfn_client(region=default_region, **kwargs) -> boto3.client:
     """
-    Returns a boto3 cloudformation client in specified region
+    Returns a boto3 cloud formation client in specified region
     :param str region: AWS region name
     :return boto3.client
     """
     try:
         cfn_client: client = boto3.client("cloudformation", region_name=region)
     except Exception as e:
-        logging.error("unable to create a cloudformation client resource")
+        logging.error("unable to create a cloud formation client resource")
         logging.error(e)
-        if begin.main:
+        if __name__ == "__main__":
             sys.exit(1)
         else:
             raise e
     return cfn_client
 
 
-def get_stack_status(stack_name, region=default_region) -> str:
+def get_stack_status(stack_name, region=default_region, **kwargs) -> str:
     """
     Returns the status of a stack. None if not deployed
     :param str stack_name: Name of the stack to check
@@ -77,7 +73,7 @@ def get_stack_status(stack_name, region=default_region) -> str:
     return result['Stacks'][0]['StackStatus']
 
 
-def stack_is_complete(stack_name, region=default_region) -> bool:
+def stack_is_complete(stack_name, region=default_region, **kwargs) -> bool:
     """
     Returns true if stack is in completed state, else returns false
     :param string stack_name: Name of the stack
@@ -93,7 +89,7 @@ def stack_is_complete(stack_name, region=default_region) -> bool:
     return False
 
 
-def get_stack_outputs(stack_name, region=default_region) -> list:
+def get_stack_outputs(stack_name, region=default_region, **kwargs) -> list:
     """
     Returns list stack outputs
     :param string stack_name: Name of the stack to query
@@ -115,7 +111,7 @@ def get_stack_outputs(stack_name, region=default_region) -> list:
         return result['Stacks'][0]['Outputs']
 
 
-def get_stack_resources(stack_name, region=default_region) -> list:
+def get_stack_resources(stack_name, region=default_region, **kwargs) -> list:
     """
     Returns list stack resources
     :param string stack_name: Name of the stack to query
@@ -134,7 +130,7 @@ def get_stack_resources(stack_name, region=default_region) -> list:
     return result['StackResources']
 
 
-def load_parameter_files(parameter_files):
+def load_parameter_files(parameter_files, **kwargs):
     """
     :param str parameter_files: comma separated list of file names
     :return: dictionary of parameters
@@ -158,7 +154,7 @@ def load_parameter_files(parameter_files):
     return result
 
 
-def template_isvalid(template_body, region=default_region) -> bool:
+def template_isvalid(template_body, region=default_region, **kwargs) -> bool:
     """
     Validates whether template body is valid
     :param string template_body:
@@ -177,7 +173,7 @@ def template_isvalid(template_body, region=default_region) -> bool:
     return True
 
 
-def fmt_timedelta(time_delta):
+def fmt_timedelta(time_delta, **kwargs):
     """
     Formats a timedelta object into hours:minutes:seconds string
     :param timedelta time_delta:
@@ -191,10 +187,9 @@ def fmt_timedelta(time_delta):
     return f"{hours}:{minutes}:{seconds}"
 
 
-@begin.subcommand()
-def output(stack_name, region=default_region) -> bool:
+def output(stack_name, region=default_region, **kwargs) -> bool:
     """
-    Lists outputs of a cloudformation stack
+    Lists outputs of a cloud formation stack
     :param string stack_name:
     :param string region:
     :return: bool True if successful
@@ -210,8 +205,7 @@ def output(stack_name, region=default_region) -> bool:
     return True
 
 
-@begin.subcommand()
-def list_stacks(stack_name=None, region=default_region) -> bool:
+def list_stacks(stack_name=None, region=default_region, **kwargs) -> bool:
     """
     Lists deployed stacks and thier status
     :param string stack_name: optional stack name. Default is none
@@ -251,7 +245,7 @@ def list_stacks(stack_name=None, region=default_region) -> bool:
     return True
 
 
-def get_failed_stack_events(stack_name, region=default_region) -> list:
+def get_failed_stack_events(stack_name, region=default_region, **kwargs) -> list:
     """
     Returns a list of stack events that have status that includes FAILED
     :param string stack_name:
@@ -277,8 +271,7 @@ def get_failed_stack_events(stack_name, region=default_region) -> list:
     return result
 
 
-@begin.subcommand()
-def parameters(stack_name, region=default_region) -> bool:
+def parameters(stack_name, region=default_region, **kwargs) -> bool:
     """
     Logs the parameters deployed with a stack
     :param string stack_name:
@@ -302,8 +295,7 @@ def parameters(stack_name, region=default_region) -> bool:
     return True
 
 
-@begin.subcommand()
-def reason(stack_name, region=default_region) -> bool:
+def reason(stack_name, region=default_region, **kwargs) -> bool:
     """
     Logs the reason for a failed stack to info
     :param string stack_name:
@@ -324,9 +316,8 @@ def reason(stack_name, region=default_region) -> bool:
     return True
 
 
-@begin.subcommand()
 def apply(stack_name, module_name=None, parameter_files=None, capabilities=default_capabilities,
-          region=default_region, auto_approve=False) -> bool:
+          region=default_region, auto_approve=False, **kwargs) -> bool:
     """
     :param string stack_name: name of stack to create. If module_name not given, uses python module by same name in cwd
     :param string module_name: name of the python troposphere module to import (if different than stack_name)
@@ -345,7 +336,7 @@ def apply(stack_name, module_name=None, parameter_files=None, capabilities=defau
         sys.path.append(os.getcwd())
         stack = __import__(stack_name)
 
-    # Generate cloudformation parameters from supplied input files
+    # Generate cloud formation parameters from supplied input files
     cfn_parameters = create_cfn_parameters(load_parameter_files(parameter_files))
     # Split incoming capabilities string
     capabilities = capabilities.split(",")
@@ -354,7 +345,7 @@ def apply(stack_name, module_name=None, parameter_files=None, capabilities=defau
     stack_status = get_stack_status(stack_name=stack_name, region=region)
     logging.info(f"STACK: {stack_name}, Current Status: {stack_status}")
 
-    # Create a cloudformation client
+    # Create a cloud formation client
     cfn_client = get_cfn_client(region=region)
 
     # See if Stack is deployed
@@ -449,9 +440,8 @@ def apply(stack_name, module_name=None, parameter_files=None, capabilities=defau
     return True
 
 
-@begin.subcommand()
 def plan(stack_name, module_name=None, region=default_region, parameter_files=None,
-         capabilities=default_capabilities, output='text', delete_change_set=True) -> bool:
+         capabilities=default_capabilities, output='text', delete_change_set=True, **kwargs) -> bool:
     """
 
     :param string stack_name: stack name
@@ -595,8 +585,7 @@ def plan(stack_name, module_name=None, region=default_region, parameter_files=No
         return True
 
 
-@begin.subcommand()
-def destroy(stack_name, region=default_region, auto_approve=False):
+def destroy(stack_name, region=default_region, auto_approve=False, **kwargs):
     """
     Deletes a Cloudformation Stack
     :param string stack_name:
@@ -641,10 +630,74 @@ def destroy(stack_name, region=default_region, auto_approve=False):
     return True
 
 
-@begin.start
-@begin.logging
-def run(operation):
-    """
-    Manages troposphere stack like terraform
-    :return:
-    """
+def main():
+    stack_help = "name of the cloud formation stack"
+    module_help = "name of the python troposphere module"
+    region_help = f"comma separated list of AWS capabilities. default: {default_region}"
+    capabilities_help = f"comma separated list of AWS capabilities. default: {default_capabilities}"
+    approve_help = "auto approve changes"
+    param_files_help = "comma separated yaml parameter files"
+
+    parser = argparse.ArgumentParser()
+    subparsers = parser.add_subparsers(title='operation')
+    parser.add_argument('-v', '--verbose', action='store_true', help="get DEBUG logging")
+
+    apply_parser = subparsers.add_parser('apply', help="create or update stack")
+    apply_parser.add_argument('stack_name', help=stack_help)
+    apply_parser.add_argument('-m', '--module_name', help=module_help)
+    apply_parser.add_argument('-p', '--parameter_files', help=param_files_help)
+    apply_parser.add_argument('-c', '--capabilities', default=default_capabilities, help=capabilities_help)
+    apply_parser.add_argument('-r', '--region', default=default_region, help=region_help)
+    apply_parser.add_argument('-auto-approve', action='store_true', help=approve_help)
+    apply_parser.set_defaults(func=apply)
+
+    plan_parser = subparsers.add_parser('plan', help="view change plan")
+    plan_parser.add_argument('stack_name')
+    plan_parser.add_argument('-m', '--module_name', help=module_help)
+    plan_parser.add_argument('-p', '--parameter_files', help=param_files_help)
+    plan_parser.add_argument('-c', '--capabilities', default=default_capabilities, help=capabilities_help)
+    plan_parser.add_argument('-r', '--region', default=default_region, help=region_help)
+    plan_parser.set_defaults(func=plan)
+
+    destroy_parser = subparsers.add_parser('destroy', help="remove stack")
+    destroy_parser.set_defaults(func=destroy)
+    destroy_parser.add_argument('stack_name')
+    destroy_parser.add_argument('-auto-approve', action='store_true', help=approve_help)
+    destroy_parser.add_argument('-r', '--region', default=default_region, help=region_help)
+    destroy_parser.set_defaults(func=destroy)
+
+    list_parser = subparsers.add_parser('list', help="list stacks")
+    list_parser.add_argument('-r', '--region', default=default_region, help=region_help)
+    list_parser.set_defaults(func=list_stacks)
+
+    output_parser = subparsers.add_parser('output')
+    output_parser.set_defaults(func=output)
+    output_parser.add_argument('stack_name')
+    output_parser.add_argument('-r', '--region', default=default_region, help=region_help)
+    output_parser.set_defaults(func=output)
+
+    parameters_parser = subparsers.add_parser('parameters', help="list parameters for a stack")
+    parameters_parser.set_defaults(func=parameters)
+    parameters_parser.add_argument('stack_name')
+    parameters_parser.add_argument('-r', '--region', default=default_region, help=region_help)
+    parameters_parser.set_defaults(func=parameters)
+
+    reason_parser = subparsers.add_parser('reason', help="least reasons for failed stack")
+    reason_parser.set_defaults(func=reason)
+    reason_parser.add_argument('stack_name')
+    reason_parser.add_argument('-r', '--region', default=default_region, help=region_help)
+    reason_parser.set_defaults(func=reason)
+
+    args = parser.parse_args()
+    if not hasattr(args, 'func'):
+        parser.print_help()
+        sys.exit(0)
+
+    logging.getLogger().setLevel('INFO')
+    if args.verbose:
+        logging.getLogger().setLevel('DEBUG')
+    args.func(**vars(args))
+
+
+if __name__ == "__main__":
+    main()

@@ -2,3 +2,6 @@ boto3
 begins
 troposphere
 awacs
+PyYAML
+botocore
+colorlog

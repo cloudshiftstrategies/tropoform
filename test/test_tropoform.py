@@ -8,27 +8,32 @@ import sys
 
 class TestHelpers(unittest.TestCase):
 
+    def setUp(self) -> None:
+        self.region = 'us-east-1'
+        if 'AWS_DEFAULT_REGION' in os.environ:
+            self.region = os.environ['AWS_DEFAULT_REGION']
+
     def test_create_cfn_parameters(self):
-        # def create_cfn_parameters(parameters) -> list:
+        # def _create_cfn_parameters(parameters) -> list:
         data = {'key1': 'value1', 'key2': 2}
         desired = [{'ParameterKey': 'key1', 'ParameterValue': 'value1'}, {'ParameterKey': 'key2', 'ParameterValue': 2}]
-        result = tropoform.create_cfn_parameters(data)
+        result = tropoform._create_cfn_parameters(parameters_dict=data)
         self.assertEqual(result, desired)
 
     def test_get_cfn_client(self):
-        # def get_cfn_client(region=default_region) -> boto3.client:
-        cfn_client = tropoform.get_cfn_client()
+        # def _get_cfn_client(region=default_region) -> boto3.client:
+        cfn_client = tropoform._get_cfn_client(region=self.region)
         self.assertIsNot(cfn_client, False)
 
     def test_load_parameter_files(self):
-        # def load_parameter_files(parameter_files):
-        result = tropoform.load_parameter_files('./test/sample.parms.yaml,./test/sample.parms2.yaml')
+        # def _load_parameter_files(parameter_files):
+        result = tropoform._load_parameter_files(parameter_files='./test/sample.parms.yaml,./test/sample.parms2.yaml')
         desired = {'Parm1': 'Parameter 1', 'Parm2': "2", 'Parm3': 'Parameter 3', 'Parm4': "4"}
         self.assertEqual(result, desired)
 
     def test_fmt_timedelta(self):
-        # def fmt_timedelta(time_delta):
-        result = tropoform.fmt_timedelta(datetime.timedelta(seconds=60))
+        # def _fmt_timedelta(time_delta):
+        result = tropoform._fmt_timedelta(datetime.timedelta(seconds=60))
         self.assertEqual(result, '00:01:00')
 
 
@@ -39,9 +44,13 @@ class TestCfn(unittest.TestCase):
     template = None
     tropo_module = None
     param_files = None
+    region = None
 
     @classmethod
     def setUpClass(TestCfn) -> None:
+        TestCfn.region = 'us-east-1'
+        if 'AWS_DEFAULT_REGION' in os.environ:
+            TestCfn.region = os.environ['AWS_DEFAULT_REGION']
         # disable warnings the request module creates in unittest
         warnings.simplefilter("ignore", ResourceWarning)
         # Use the stack name:
@@ -59,70 +68,73 @@ class TestCfn(unittest.TestCase):
         tropoform.apply(stack_name=TestCfn.stack_name,
                         module_name=TestCfn.module_name,
                         parameter_files=TestCfn.param_files,
+                        region=TestCfn.region,
                         auto_approve=True)
 
     @classmethod
     def tearDownClass(TestCfn) -> None:
         # destroy sample stack that we can test
-        tropoform.destroy(stack_name=TestCfn.stack_name, auto_approve=True)
+        tropoform.destroy(stack_name=TestCfn.stack_name,
+                          region=TestCfn.region,
+                          auto_approve=True)
 
     def test_get_stack_status(self):
-        # def get_stack_status(stack_name, region=default_region) -> str:
-        result = tropoform.get_stack_status(stack_name=TestCfn.stack_name)
+        # def _get_stack_status(stack_name, region=default_region) -> str:
+        result = tropoform._get_stack_status(stack_name=TestCfn.stack_name, region=TestCfn.region)
         self.assertEqual(result, 'CREATE_COMPLETE')
 
     def test_stack_is_complete(self):
-        # def stack_is_complete(stack_name, region=default_region) -> bool:
-        result = tropoform.stack_is_complete(stack_name=TestCfn.stack_name)
+        # def _stack_is_complete(stack_name, region=default_region) -> bool:
+        result = tropoform._stack_is_complete(stack_name=TestCfn.stack_name, region=TestCfn.region)
         self.assertTrue(result)
 
     def test_get_stack_outputs(self):
-        # def get_stack_outputs(stack_name, region=default_region) -> list:
-        result = tropoform.get_stack_outputs(stack_name=TestCfn.stack_name)
+        # def _get_stack_outputs(stack_name, region=default_region) -> list:
+        result = tropoform._get_stack_outputs(stack_name=TestCfn.stack_name, region=TestCfn.region)
         self.assertIsInstance(result, list)
 
     def test_get_stack_resources(self):
-        # def get_stack_resources(stack_name, region=default_region) -> list:
-        result = tropoform.get_stack_resources(stack_name=TestCfn.stack_name)
+        # def _get_stack_resources(stack_name, region=default_region) -> list:
+        result = tropoform._get_stack_resources(stack_name=TestCfn.stack_name, region=TestCfn.region)
         self.assertIsInstance(result, list)
 
     def test_template_isvalid(self):
-        # def template_isvalid(template_body, region=default_region) -> bool:
-        result = tropoform.template_isvalid(template_body=TestCfn.template.to_yaml())
+        # def _template_isvalid(template_body, region=default_region) -> bool:
+        result = tropoform._template_isvalid(template_body=TestCfn.template.to_yaml(), region=TestCfn.region)
         self.assertTrue(result)
 
     def test_output(self):
         # def output(stack_name, region=default_region) -> bool:
         with self.assertLogs(level='INFO') as logs:
-            result = tropoform.output(stack_name=TestCfn.stack_name)
+            result = tropoform.output(stack_name=TestCfn.stack_name, region=TestCfn.region)
         self.assertTrue(result)
         self.assertIn('INFO:root:output               = tropoform_test_user', logs.output)
 
     def test_list_stacks(self):
         # def list_stacks(stack_name=None, region=default_region) -> bool:
         with self.assertLogs(level='INFO') as logs:
-            result = tropoform.list_stacks(stack_name=TestCfn.stack_name)
+            result = tropoform.list_stacks(stack_name=TestCfn.stack_name, region=TestCfn.region)
         self.assertTrue(result)
         self.assertIn('INFO:root:sampleTropoformStack CREATE_COMPLETE      NOT_CHECKED          ', logs.output)
         result = tropoform.list_stacks()
         self.assertTrue(result)
 
     def test_get_failed_stack_events(self):
-        # def get_failed_stack_events(stack_name, region=default_region) -> list:
-        result = tropoform.get_failed_stack_events(stack_name=TestCfn.stack_name)
+        # def _get_failed_stack_events(stack_name, region=default_region) -> list:
+        result = tropoform._get_failed_stack_events(stack_name=TestCfn.stack_name, region=TestCfn.region)
         self.assertIsInstance(result, list)
 
     def test_parameters(self):
         # def parameters(stack_name, region=default_region) -> bool:
         with self.assertLogs(level='INFO') as logs:
-            result = tropoform.parameters(stack_name=TestCfn.stack_name)
+            result = tropoform.parameters(stack_name=TestCfn.stack_name, region=TestCfn.region)
         self.assertTrue(result)
         self.assertIn('INFO:root:Parm1                = Parameter 1 ', logs.output)
 
     def test_reason(self):
         # def reason(stack_name, region=default_region) -> bool:
         with self.assertLogs(level='INFO') as logs:
-            result = tropoform.reason(stack_name=TestCfn.stack_name)
+            result = tropoform.reason(stack_name=TestCfn.stack_name, region=TestCfn.region)
         self.assertTrue(result)
         self.assertIn('INFO:root:STACK sampleTropoformStack create/update FAILED due to the following stack events:',
                       logs.output)
@@ -137,7 +149,8 @@ class TestCfn(unittest.TestCase):
         with self.assertLogs(level='INFO') as logs:
             result = tropoform.plan(stack_name=TestCfn.stack_name,
                                     module_name=TestCfn.module_name,
-                                    parameter_files=TestCfn.param_files)
+                                    parameter_files=TestCfn.param_files,
+                                    region=TestCfn.region)
         self.assertTrue(result)
         self.assertIn('INFO:root:No Changes Detected for Stack: sampleTropoformStack', logs.output)
 
@@ -145,3 +158,126 @@ class TestCfn(unittest.TestCase):
         # def destroy(stack_name, region=default_region, auto_approve=False):
         # tested in class setup
         pass
+
+
+class TestParser(unittest.TestCase):
+
+    stack_name = None
+    module_name = None
+    template = None
+    tropo_module = None
+    param_files = None
+    region = None
+    capabilities = None
+
+    @classmethod
+    def setUpClass(TestParser) -> None:
+        TestParser.region = 'us-east-1'
+        if 'AWS_DEFAULT_REGION' in os.environ:
+            TestParser.region = os.environ['AWS_DEFAULT_REGION']
+        # Use the stack name
+        TestParser.stack_name = 'sampleTropoformStack'
+        # Use the module_name in remote path
+        TestParser.module_name = './test/sample_tropo_module.py'
+        TestParser.capabilities = 'CAPABILITY_NAMED_IAM'
+
+    def test_list_parameters_reason(self):
+        parameters = ['func', 'region', 'stack_name', 'verbose']
+        funcs = ['list', 'parameters', 'reason']
+
+        for func in funcs:
+            args = [func]
+            if func == 'list':
+                # Test list without a stack_name (others require a stack name)
+                parser = tropoform._parse_args(args)
+                for parameter in parameters:
+                    self.assertIn(parameter, parser)
+
+            args.append(TestParser.stack_name)
+            parser = tropoform._parse_args(args)
+            for parameter in parameters:
+                self.assertIn(parameter, parser)
+
+            args.insert(0, '-v')
+            parser = tropoform._parse_args(args)
+            for parameter in parameters:
+                self.assertIn(parameter, parser)
+
+            args.extend(['-r', TestParser.region])
+            parser = tropoform._parse_args(args)
+            for parameter in parameters:
+                self.assertIn(parameter, parser)
+
+    def test_output_parameters(self):
+        parameters = ['func', 'region', 'stack_name', 'verbose']
+        funcs = ['output', 'parameters']
+        for func in funcs:
+            args = [func, TestParser.stack_name]
+            parser = tropoform._parse_args(args)
+            for parameter in parameters:
+                self.assertIn(parameter, parser)
+
+            args.insert(0, '-v')
+            parser = tropoform._parse_args(args)
+            for parameter in parameters:
+                self.assertIn(parameter, parser)
+
+            args.extend(['-r', TestParser.region])
+            parser = tropoform._parse_args(args)
+            for parameter in parameters:
+                self.assertIn(parameter, parser)
+
+    def test_plan_apply(self):
+        parameters = ['func', 'region', 'stack_name', 'verbose', 'capabilities']
+        funcs = ['plan', 'apply']
+
+        for func in funcs:
+            args = [func, TestParser.stack_name]
+            parser = tropoform._parse_args(args)
+            for parameter in parameters:
+                self.assertIn(parameter, parser)
+
+            args.insert(0, '-v')
+            parser = tropoform._parse_args(args)
+            for parameter in parameters:
+                self.assertIn(parameter, parser)
+
+            args.extend(['-r', TestParser.region])
+            parser = tropoform._parse_args(args)
+            for parameter in parameters:
+                self.assertIn(parameter, parser)
+
+            args.extend(['-m', TestParser.module_name])
+            parser = tropoform._parse_args(args)
+            for parameter in parameters:
+                self.assertIn(parameter, parser)
+
+            args.extend(['-c', TestParser.capabilities])
+            parser = tropoform._parse_args(args)
+            for parameter in parameters:
+                self.assertIn(parameter, parser)
+
+            if func == 'apply':
+                args.extend(['--auto_approve'])
+                parser = tropoform._parse_args(args)
+                for parameter in parameters:
+                    self.assertIn(parameter, parser)
+
+    def test_destroy_apply(self):
+        parameters = ['func', 'region', 'stack_name', 'verbose']
+        func = 'destroy'
+
+        args = [func, TestParser.stack_name]
+        parser = tropoform._parse_args(args)
+        for parameter in parameters:
+            self.assertIn(parameter, parser)
+
+        args.insert(0, '-v')
+        parser = tropoform._parse_args(args)
+        for parameter in parameters:
+            self.assertIn(parameter, parser)
+
+        args.append('--auto_approve')
+        parser = tropoform._parse_args(args)
+        for parameter in parameters:
+            self.assertIn(parameter, parser)

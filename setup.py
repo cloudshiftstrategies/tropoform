@@ -8,7 +8,7 @@ with open('requirements.txt') as f:
 
 setuptools.setup(
     name='tropoform',
-    version='0.1.11',
+    version='0.2.0',
     entry_points={'console_scripts': ['tropoform=tropoform.tropoform:main']},
     author="Brian Peterson",
     author_email="brian.peterson@cloudshift.cc",
@@ -19,8 +19,11 @@ setuptools.setup(
     packages=setuptools.find_packages(),
     install_requires=[
         'boto3',
+        'botocore'
         'troposphere',
-        'awacs'
+        'awacs',
+        'PyYAML',
+        'colorlog',
         ],
     python_requires='>=3',
     classifiers=[

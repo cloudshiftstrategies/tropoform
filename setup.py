@@ -1,17 +1,11 @@
 import setuptools
-import versioneer
 
+with open("README.md", "r") as fh:
+    long_description = fh.read()
 
-setuptools.setup(
-    setup_requires=['pbr'], pbr=True,
-    version=versioneer.get_version(),
-    cmdclass=versioneer.get_cmdclass()
-)
-
-"""
 setuptools.setup(
     name='tropoform',
-    version=verstr,
+    version='0.2.3',
     entry_points={'console_scripts': ['tropoform=tropoform.tropoform:main']},
     author="Brian Peterson",
     author_email="brian.peterson@cloudshift.cc",
@@ -22,7 +16,7 @@ setuptools.setup(
     packages=setuptools.find_packages(),
     install_requires=[
         'boto3',
-        'botocore'
+        'botocore',
         'troposphere',
         'awacs',
         'PyYAML',
@@ -35,4 +29,3 @@ setuptools.setup(
         "Operating System :: OS Independent",
     ],
 )
-"""

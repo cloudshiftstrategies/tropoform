@@ -366,7 +366,8 @@ pipenv shell
 python3 -m unittest test
 
 # Create new version
- # edit version in tropoform/__version.py
+ # edit __version__ in tropoform/tropoform.py
+ # edit version in setup.py
  # tag release
  git add .
  git commit -m "xxx"

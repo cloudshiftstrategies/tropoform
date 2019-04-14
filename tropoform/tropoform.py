@@ -2,6 +2,8 @@
 """
 Script to manage troposphere templates like terraform
 """
+__version__ = '0.2.3'
+
 import boto3
 from datetime import datetime
 import time
@@ -15,9 +17,6 @@ from boto3 import client
 from typing import Optional
 from colorlog import colorlog
 
-from _version import get_versions
-__version__ = get_versions()['version']
-del get_versions
 
 # Configure the global logger
 global logger
@@ -711,7 +710,7 @@ def destroy(stack_name, region, auto_approve=False, **kwargs) -> bool:
     return True
 
 
-def _parse_args(args):
+def _parse_args(*args, **kwargs):
     """
     Parse input logs
     :param args:
@@ -782,33 +781,34 @@ def _parse_args(args):
     reason_parser.set_defaults(func=reason)
 
     # parse logs
-    args = parser.parse_args(args)
+    args = parser.parse_args()
 
     # Make sure a func attribute is set, else throw an exception
-    if not hasattr(args, 'func'):
-        message = "argparse subparser must include subparser.set_default(func='xxx') parameter"
-        logging.critical(message)
-        raise ValueError(message)
 
-    return args
+    return parser, args
 
 
-def main(args) -> bool:
+def main() -> bool:
     """
     Main Entry Point
     :return: True if operation successful
     """
     # parse the arguments
-    args = _parse_args(args)
+    parser, args = _parse_args()
 
     # Modify the global logger
     global logger
     logger = _get_logger(args.verbose)
 
     # Run the function defined in the args
-    return args.func(**vars(args))
+    try:
+        return args.func(**vars(args))
+    except AttributeError:
+        logger.critical("Please specify an operation")
+        parser.print_help()
+        sys.exit(1)
 
 
 if __name__ == "__main__":
     # Call the main function with command line arguments
-    sys.exit(main(sys.argv[1:]))
+    sys.exit(main())

@@ -368,15 +368,19 @@ python3 -m unittest test
 # Create new version
  # edit __version__ in tropoform/tropoform.py
  # edit version in setup.py
- # tag release
- git add .
- git commit -m "xxx"
- git tag vX.Y.Z
- git push && git push --tags
-
+ 
 # Build
 python3 setup.py sdist bdist_wheel
 
+# Test local install
+python3 setup.py install
+
+# tag release
+git add .
+git commit -m "xxx"
+git tag vX.Y.Z
+git push && git push --tags
+
 # Publish to PyPy
-twine upload --repository pypy /dist/tropoform-X.Y.Z*
+twine upload --repository pypi /dist/tropoform-X.Y.Z*
 ```

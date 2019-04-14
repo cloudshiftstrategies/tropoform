@@ -4,13 +4,14 @@ url = "https://pypi.org/simple"
 verify_ssl = true
 
 [dev-packages]
+twine = "*"
+gitchangelog = "*"
 
 [packages]
 boto3 = "*"
-begins = "*"
+botocore = "*"
 troposphere = {extras = ["policy"],version = "*"}
-twine = "*"
-pyyaml = "*"
+PyYAML = "*"
 colorlog = "*"
 
 [requires]

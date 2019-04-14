@@ -1,0 +1,16 @@
+CHANGES
+=======
+
+v0.2.0
+------
+
+* release v0.2.0
+* Refactored arguments, added much more unittest coverage, added README.md
+
+v0.1.11
+-------
+
+* Working Version
+* Fix no arg
+* first commit
+* First commit

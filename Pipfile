@@ -12,6 +12,7 @@ troposphere = {extras = ["policy"],version = "*"}
 twine = "*"
 pyyaml = "*"
 colorlog = "*"
+pbr = "*"
 
 [requires]
 python_version = "3.6"

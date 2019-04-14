@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 """
 Script to manage troposphere templates like terraform
 """
@@ -13,6 +14,10 @@ import argparse
 from boto3 import client
 from typing import Optional
 from colorlog import colorlog
+
+from _version import get_versions
+__version__ = get_versions()['version']
+del get_versions
 
 # Configure the global logger
 global logger
@@ -726,6 +731,8 @@ def _parse_args(args):
     parser = argparse.ArgumentParser()
     subparsers = parser.add_subparsers(title='operation')
     parser.add_argument('-v', '--verbose', action='store_true', help="get DEBUG logging")
+    parser.add_argument('--version', action='version',
+                        version='%(prog)s {version}'.format(version=__version__))
 
     apply_parser = subparsers.add_parser('apply', help="create or update stack")
     apply_parser.add_argument('stack_name', help=stack_help + stack_help_2)

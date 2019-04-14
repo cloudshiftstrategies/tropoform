@@ -1,9 +1,11 @@
 import unittest
-from tropoform import tropoform
 import warnings
 import datetime
 import os
 import sys
+# This is naughty... but cant seem to make it work without it
+sys.path.append('tropoform')
+from tropoform import tropoform
 
 
 class TestHelpers(unittest.TestCase):
@@ -81,7 +83,7 @@ class TestCfn(unittest.TestCase):
     def test_get_stack_status(self):
         # def _get_stack_status(stack_name, region=default_region) -> str:
         result = tropoform._get_stack_status(stack_name=TestCfn.stack_name, region=TestCfn.region)
-        self.assertEqual(result, 'CREATE_COMPLETE')
+        self.assertEqual('CREATE_COMPLETE', result)
 
     def test_stack_is_complete(self):
         # def _stack_is_complete(stack_name, region=default_region) -> bool:
@@ -180,6 +182,12 @@ class TestParser(unittest.TestCase):
         # Use the module_name in remote path
         TestParser.module_name = './test/sample_tropo_module.py'
         TestParser.capabilities = 'CAPABILITY_NAMED_IAM'
+
+    # CANNOT get this test to run.. TODO: fix this
+    #def test_version(self):
+    #    args = ['--version']
+    #    parser = tropoform._parse_args(args)
+    #    self.assertIsInstance(parser, str)
 
     def test_list_parameters_reason(self):
         parameters = ['func', 'region', 'stack_name', 'verbose']

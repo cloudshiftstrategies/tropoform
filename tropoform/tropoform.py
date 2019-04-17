@@ -393,7 +393,7 @@ def reason(stack_name, region, **kwargs) -> bool:
                      f"{'LogicalResourceId':{30}} {'ResourceStatusReason'}")
         for event in events:
             timestamp = event['Timestamp'].strftime("%H:%M:%S")
-            status_reason = event['ResourceStatusReason'].split("(")[0]
+            status_reason = event['ResourceStatusReason'] #.split("(")[0]
             if "Resource update cancelled" not in status_reason:
                 logger.info(f"{timestamp:{10}} {event['ResourceStatus']:{15}} {event['ResourceType']:{35}} "
                              f"{event['LogicalResourceId']:{30}} {status_reason}")

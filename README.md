@@ -378,8 +378,10 @@ python3 setup.py install
 # tag release
 git add .
 git commit -m "xxx"
-git tag X.Y.Z
+git tag X.Y.Z -m "xxx"
 git push && git push --tags
+gitchangelog > Changelog.rst 
+git commit -m "updated 
 
 # Publish to PyPy
 twine upload --repository test dist/tropoform-X.Y.Z*

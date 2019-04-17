@@ -378,9 +378,11 @@ python3 setup.py install
 # tag release
 git add .
 git commit -m "xxx"
+gitchangelog > Changelog.rst 
+# update version in Changelog.rst
+git commit -am "updated changelog"
 git tag X.Y.Z -m "xxx"
 git push && git push --tags
-gitchangelog > Changelog.rst 
 git commit -m "updated 
 
 # Publish to PyPy

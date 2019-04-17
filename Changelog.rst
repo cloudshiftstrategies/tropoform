@@ -2,12 +2,25 @@ Changelog
 =========
 
 
+0.2.4 (2019-04-17)
+------------------
+- Fixed bug https://github.com/cloudshiftstrategies/tropoform/issues/5.
+  [Brian Peterson]
+- Updated build instructions. [Brian Peterson]
+- Updated Pipfile. [Brian Peterson]
+- Added Changelog. [Brian Peterson]
+
+
 0.2.3 (2019-04-14)
 ------------------
-- Extended the unittest suite significantly to catch things the like the --region bug.
-- Re-did the arg-parsing.. The only meaningful user difference is that --auto-approve is now --auto_approve.
-- Fixed bug where --region doesnt work
-- Added a --version option so that you can see the version you are running (will likely evolve quickly).
-- Fixed the logging output so that you don't see the logging level and module ("INFO:root:")
-- Enhanced the logging to display different colors for DEBUG, WARNING and CRITICAL errors
-- Documentation created - https://github.com/cloudshiftstrategies/tropoform/blob/master/README.md
+- Fixed argparse function. Removed versioneer bs. [Brian Peterson]
+- Fixed Development State. [Brian Peterson]
+- Fix. [Brian Peterson]
+- Version 0.2.0. [Brian Peterson]
+- Release v0.2.0. [Brian Peterson]
+- Refactored arguments, added much more unittest coverage, added
+  README.md. [Brian Peterson]
+- Working Version. [Brian Peterson]
+- Fix no arg. [Brian Peterson]
+
+

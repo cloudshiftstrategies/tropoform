@@ -378,9 +378,10 @@ python3 setup.py install
 # tag release
 git add .
 git commit -m "xxx"
-git tag vX.Y.Z
+git tag X.Y.Z
 git push && git push --tags
 
 # Publish to PyPy
-twine upload --repository pypi /dist/tropoform-X.Y.Z*
+twine upload --repository test dist/tropoform-X.Y.Z*
+twine upload --repository pypi dist/tropoform-X.Y.Z*
 ```

@@ -2,7 +2,7 @@
 """
 Script to manage troposphere templates like terraform
 """
-__version__ = '0.2.5'
+__version__ = '0.2.6'
 
 import boto3
 from datetime import datetime
@@ -698,15 +698,25 @@ def destroy(stack_name, region, auto_approve=False, **kwargs) -> bool:
     except Exception as e:
         logger.error(e)
         return False
-    # Wait for deletion to complete (when stack_status is null)
-    while stack_status:
-        logger.info(f"STACK: {stack_name}, Status: {stack_status} - {datetime.now().strftime('%H:%M:%S')}")
+
+    while not _stack_is_complete(stack_name=stack_name, region=region):
         time.sleep(15)
         stack_status = _get_stack_status(stack_name=stack_name, region=region)
+        logger.info(f"STACK: {stack_name}, Status: {stack_status} - {datetime.now().strftime('%H:%M:%S')}")
+        if not stack_status:
+            break
+
     # Stop the timer
     end = datetime.now()
     duration = _fmt_timedelta((end - start))
-    logger.info(f"STACK: {stack_name} deleted in {duration}")
+    logger.info(f"STACK: {stack_name} ended in {duration}")
+
+    # If stack_status is in FAILED state or ROLLBACK, determine reason from events
+    if stack_status and ("FAILED" in stack_status or "ROLLBACK" in stack_status):
+        logger.warning(f"STACK: {stack_name} not deleted and is in status {stack_status}")
+        reason(stack_name=stack_name, region=region)
+        return False
+
     return True
 
 

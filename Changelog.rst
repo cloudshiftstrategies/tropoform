@@ -2,8 +2,16 @@ Changelog
 =========
 
 
-0.2.4 (2019-04017)
+0.2.6 (2019-04-17)
 ------------
+- Fixed https://github.com/cloudshiftstrategies/tropoform/issues/4.
+  [Brian Peterson]
+
+
+0.2.5 (2019-04-17)
+------------------
+- Updated version. [Brian Peterson]
+- Updated changelog. [Brian Peterson]
 - Fixed issue:
   https://github.com/cloudshiftstrategies/tropoform/issues/6. [Brian
   Peterson]

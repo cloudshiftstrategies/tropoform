@@ -1,6 +1,7 @@
 from troposphere import Template
 from troposphere import iam, Output, Parameter, Ref
 
+
 def get_template():
     template = Template()
     template.add_parameter(
@@ -42,3 +43,7 @@ def get_template():
     )
 
     return template
+
+
+if __name__ == "__main__":
+    print(get_template().to_json())

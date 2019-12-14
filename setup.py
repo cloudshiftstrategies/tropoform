@@ -13,7 +13,7 @@ setuptools.setup(
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/cloudshiftstrategies/tropoform",
-    packages=setuptools.find_packages(),
+    packages=setuptools.find_namespace_packages(),
     install_requires=[
         'boto3',
         'botocore',

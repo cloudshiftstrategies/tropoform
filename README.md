@@ -1,7 +1,7 @@
-# tropoform
+# Tropoform
 
-tropoform is a tool that provides a [terraform](terraform.io) like interfaces for AWS
-Cloud Formation stacks created by [troposphere](https://github.com/cloudtools/troposphere)
+tropoform is a tool that provides a [terraform](https://terraform.io) like interfaces for standalone AWS
+Cloud Formation stacks or those created by [troposphere](https://github.com/cloudtools/troposphere)
 
 You can create a troposphere script (a python module) that has at least one method: get_template()
 and use tropoform to plan, apply, destroy the cloudformation stack.
@@ -392,6 +392,7 @@ cd tropoform
 
 # Setup virtual environment
 pipenv shell
+pipenv install --dev
 
 # Edit code. Main script is in: tropoform/tropoform.py
 

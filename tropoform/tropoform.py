@@ -14,12 +14,11 @@ import os
 import sys
 import argparse
 from boto3 import client
-from typing import Optional
+from typing import Optional, Union
 from colorlog import colorlog
 
-
 # Configure the global logger
-global logger
+# global logger
 logger = logging.getLogger()
 # Set these extra verbose loggers to INFO or WARNING (even when app is in debug)
 logging.getLogger('botocore').setLevel(logging.WARNING)
@@ -34,7 +33,13 @@ if 'AWS_DEFAULT_REGION' in os.environ:
 default_capabilities = 'CAPABILITY_NAMED_IAM'
 
 
-def _get_logger(verbose=False):
+# create a base class for a Tropoform Stack Module
+class TropoformStackBase:
+    def get_template(self):
+        pass
+
+
+def _get_logger(verbose: bool = False) -> logging:
     """
         Setup the logging environment
     """
@@ -63,7 +68,7 @@ def _get_logger(verbose=False):
     return logging.getLogger(__name__)
 
 
-def _create_cfn_parameters(parameters_dict) -> list:
+def _create_cfn_parameters(parameters_dict: dict) -> list:
     """
     Converts a dict of key/value pairs into cloud formation list of dicts
     :parm dict parameters_dict: parameters_dict dictionary to be converted to cfn parameters_dict
@@ -77,7 +82,7 @@ def _create_cfn_parameters(parameters_dict) -> list:
     return result
 
 
-def _get_cfn_client(region) -> boto3.client:
+def _get_cfn_client(region: str) -> boto3.client:
     """
     Returns a boto3 cloud formation client in specified region
     :param str region: AWS region name
@@ -96,7 +101,7 @@ def _get_cfn_client(region) -> boto3.client:
     return cfn_client
 
 
-def _get_stack_status(stack_name, region) -> Optional[str]:
+def _get_stack_status(stack_name: str, region: str) -> Optional[str]:
     """
     Returns the status of a stack. None if not deployed
     :param str stack_name: Name of the stack to check
@@ -116,7 +121,7 @@ def _get_stack_status(stack_name, region) -> Optional[str]:
     return result['Stacks'][0]['StackStatus']
 
 
-def _stack_is_complete(stack_name, region) -> bool:
+def _stack_is_complete(stack_name: str, region: str) -> bool:
     """
     Returns true if stack is in completed state, else returns false
     :param string stack_name: Name of the stack
@@ -135,7 +140,7 @@ def _stack_is_complete(stack_name, region) -> bool:
     return False
 
 
-def _get_stack_outputs(stack_name, region) -> list:
+def _get_stack_outputs(stack_name: str, region: str) -> list:
     """
     Returns list stack outputs
     :param string stack_name: Name of the stack to query
@@ -160,7 +165,7 @@ def _get_stack_outputs(stack_name, region) -> list:
         return result['Stacks'][0]['Outputs']
 
 
-def _get_stack_resources(stack_name, region) -> list:
+def _get_stack_resources(stack_name: str, region: str) -> list:
     """
     Returns list stack resources
     :param string stack_name: Name of the stack to query
@@ -181,7 +186,7 @@ def _get_stack_resources(stack_name, region) -> list:
     return result['StackResources']
 
 
-def _load_parameter_files(parameter_files) -> Optional[dict]:
+def _load_parameter_files(parameter_files: str) -> Optional[dict]:
     """
     :param str parameter_files: comma separated list of file names
     :return: dictionary of parameters, None of no params
@@ -206,7 +211,7 @@ def _load_parameter_files(parameter_files) -> Optional[dict]:
     return result
 
 
-def _template_isvalid(template_body, region) -> bool:
+def _template_isvalid(template_body: str, region: str) -> bool:
     """
     Validates whether template body is valid
     :param string template_body:
@@ -227,7 +232,7 @@ def _template_isvalid(template_body, region) -> bool:
     return True
 
 
-def _fmt_timedelta(time_delta):
+def _fmt_timedelta(time_delta: datetime.time):
     """
     Formats a timedelta object into hours:minutes:seconds string
     :param timedelta time_delta:
@@ -241,7 +246,7 @@ def _fmt_timedelta(time_delta):
     return f"{hours}:{minutes}:{seconds}"
 
 
-def _get_failed_stack_events(stack_name, region) -> list:
+def _get_failed_stack_events(stack_name: str, region: str) -> list:
     """
     Returns a list of stack events that have status that includes FAILED
     :param string stack_name:
@@ -269,7 +274,7 @@ def _get_failed_stack_events(stack_name, region) -> list:
     return result
 
 
-def _import_tropo_module(stack_name, module_name=None) -> object:
+def _import_tropo_module(stack_name: str, module_name: str = None) -> Union[object, TropoformStackBase]:
     """
     Import a troppsphere module
     :param stack_name:
@@ -293,7 +298,26 @@ def _import_tropo_module(stack_name, module_name=None) -> object:
     return stack
 
 
-def list_stacks(stack_name=None, region=None, **kwargs) -> bool:
+def _load_template(template_file: str = None, module_name: str = None, stack_name: str = None) -> str:
+    """
+    gets a string of template body from either template_file or module_name or stack_name
+    :param stack_name
+    :param template_file
+    :param module_name
+    """
+    if template_file:
+        # read the template file
+        with open(template_file, 'r') as fh:
+            template_body = fh.read()
+    else:
+        # Import the troposphere module
+        stack = _import_tropo_module(stack_name, module_name)
+        # Get the yaml template file
+        template_body = stack.get_template().to_json()
+    return template_body
+
+
+def list_stacks(stack_name: str = None, region: str = None, **kwargs) -> bool:
     """
     Logs deployed stacks and their status
     :param string stack_name: optional stack name. Default is none
@@ -305,7 +329,7 @@ def list_stacks(stack_name=None, region=None, **kwargs) -> bool:
         logger.debug(f"Logging stack {stack_name} in region {region}")
         if not _stack_is_complete(stack_name=stack_name, region=region):
             logger.error(f"STACK: {stack_name} "
-                          f"in status: {_get_stack_status(stack_name=stack_name, region=region)}. Exiting")
+                         f"in status: {_get_stack_status(stack_name=stack_name, region=region)}. Exiting")
             return False
         try:
             stacks = cfn_client.describe_stacks(StackName=stack_name)
@@ -335,7 +359,7 @@ def list_stacks(stack_name=None, region=None, **kwargs) -> bool:
     return True
 
 
-def parameters(stack_name, region, **kwargs) -> bool:
+def parameters(stack_name: str, region: str, **kwargs) -> bool:
     """
     Logs the parameters deployed with a stack
     :param string stack_name:
@@ -360,7 +384,7 @@ def parameters(stack_name, region, **kwargs) -> bool:
     return True
 
 
-def output(stack_name, region, **kwargs) -> bool:
+def output(stack_name: str, region: str, **kwargs) -> bool:
     """
     Logs outputs of a cloud formation stack
     :param string stack_name:
@@ -370,7 +394,7 @@ def output(stack_name, region, **kwargs) -> bool:
     logger.debug(f"Logging stack {stack_name} outputs in region {region}")
     if not _stack_is_complete(stack_name=stack_name, region=region):
         logger.error(f"STACK: {stack_name} "
-                      f"in status: {_get_stack_status(stack_name=stack_name, region=region)}. Exiting")
+                     f"in status: {_get_stack_status(stack_name=stack_name, region=region)}. Exiting")
         return False
     logger.info("STACK OUTPUTS:")
     for stack_output in _get_stack_outputs(stack_name=stack_name, region=region):
@@ -378,7 +402,7 @@ def output(stack_name, region, **kwargs) -> bool:
     return True
 
 
-def reason(stack_name, region, **kwargs) -> bool:
+def reason(stack_name: str, region: str, **kwargs) -> bool:
     """
     Logs the reason for a failed stack to info
     :param string stack_name:
@@ -390,22 +414,24 @@ def reason(stack_name, region, **kwargs) -> bool:
     logger.info(f"STACK {stack_name} create/update FAILED due to the following stack events:")
     if len(events) > 0:
         logger.info(f"{'UTC time':{10}} {'ResourceStatus':{15}} {'ResourceType':{35}} "
-                     f"{'LogicalResourceId':{30}} {'ResourceStatusReason'}")
+                    f"{'LogicalResourceId':{30}} {'ResourceStatusReason'}")
         for event in events:
             timestamp = event['Timestamp'].strftime("%H:%M:%S")
-            status_reason = event['ResourceStatusReason'] #.split("(")[0]
+            status_reason = event['ResourceStatusReason']  # .split("(")[0]
             if "Resource update cancelled" not in status_reason:
                 logger.info(f"{timestamp:{10}} {event['ResourceStatus']:{15}} {event['ResourceType']:{35}} "
-                             f"{event['LogicalResourceId']:{30}} {status_reason}")
+                            f"{event['LogicalResourceId']:{30}} {status_reason}")
     return True
 
 
-def apply(stack_name, region, module_name=None, parameter_files=None, capabilities=default_capabilities,
-          auto_approve=False, **kwargs) -> bool:
+def apply(stack_name: str, region: str, module_name: str = None, template_file: str = None,
+          parameter_files: str = None, capabilities: str = default_capabilities, auto_approve: bool = False,
+          **kwargs) -> bool:
     """
     Creates/Updates a cloud formation stack. Logs output
     :param string stack_name: name of stack to create. If module_name not given, uses python module by same name in cwd
     :param string module_name: name of the python troposphere module to import (if different than stack_name)
+    :param string template_file: optional name of cloud formation template file to deploy
     :param string capabilities: comma separated list of capabilities
     :param string region: Name of the region in which to perform the operation
     :param string parameter_files: optional comma separated list of parameter files
@@ -414,8 +440,11 @@ def apply(stack_name, region, module_name=None, parameter_files=None, capabiliti
     """
     logger.debug(f"applying stack: {stack_name}. module_name: {module_name}, parameter_files: {parameter_files} "
                  f"capabilities: {capabilities}, auto_approve: {auto_approve}, region: {region}")
+
     # Import the troposphere module
-    stack = _import_tropo_module(stack_name, module_name)
+    template_body = _load_template(template_file=template_file, module_name=module_name, stack_name=stack_name)
+    template_dict = yaml.load(template_body, Loader=yaml.Loader)
+    # stack = _import_tropo_module(stack_name, module_name)
 
     # Generate cloud formation parameters from supplied input files
     cfn_parameters = _create_cfn_parameters(_load_parameter_files(parameter_files))
@@ -432,8 +461,8 @@ def apply(stack_name, region, module_name=None, parameter_files=None, capabiliti
     # See if Stack is deployed
     if stack_status is None:
         # Stack not yet deployed
-        template = stack.get_template()
-        logger.info(f"CREATING Stack: {stack_name} with {len(template.resources)} resources")
+        # template = stack.get_template()
+        logger.info(f"CREATING Stack: {stack_name} with {len(template_dict['Resources'])} resources")
         # Check for approval
         if not auto_approve:
             response = input("Are you sure? [yes|no] ")
@@ -447,7 +476,7 @@ def apply(stack_name, region, module_name=None, parameter_files=None, capabiliti
         try:
             cfn_client.create_stack(
                 StackName=stack_name,
-                TemplateBody=template.to_yaml(),
+                TemplateBody=template_body,
                 Parameters=cfn_parameters,
                 Capabilities=capabilities,
             )
@@ -461,7 +490,7 @@ def apply(stack_name, region, module_name=None, parameter_files=None, capabiliti
     elif _stack_is_complete(stack_name=stack_name, region=region):
         # Stack is already deployed and ready for update
         # Generate the yaml file
-        template = stack.get_template().to_yaml()
+        # template = stack.get_template().to_yaml()
         logger.info(f"UPDATING Stack: {stack_name}")
         # get approval
         if not auto_approve:
@@ -475,7 +504,7 @@ def apply(stack_name, region, module_name=None, parameter_files=None, capabiliti
         try:
             cfn_client.update_stack(
                 StackName=stack_name,
-                TemplateBody=template,
+                TemplateBody=template_body,
                 Parameters=cfn_parameters,
                 Capabilities=capabilities,
             )
@@ -513,8 +542,8 @@ def apply(stack_name, region, module_name=None, parameter_files=None, capabiliti
 
     # Print number of resources deployed
     logger.info(f"STACK: {stack_name} {action} "
-                 f"{len(_get_stack_resources(stack_name=stack_name, region=region))} resources "
-                 f"in {duration}")
+                f"{len(_get_stack_resources(stack_name=stack_name, region=region))} resources "
+                f"in {duration}")
 
     # Print outputs
     output(stack_name=stack_name, region=region)
@@ -522,12 +551,14 @@ def apply(stack_name, region, module_name=None, parameter_files=None, capabiliti
     return True
 
 
-def plan(stack_name, region, module_name=None, parameter_files=None,
-         capabilities=default_capabilities, output_type='text', delete_change_set=True, **kwargs) -> bool:
+def plan(stack_name: str, region: str, module_name: str = None, template_file: str = None, parameter_files: str = None,
+         capabilities: str = default_capabilities, output_type: str = 'text', delete_change_set: bool = True,
+         **kwargs) -> bool:
     """
     Creates a Change Plan for a cloud formation stack and logs the results
     :param string stack_name: stack name
     :param string module_name: optional name of troposphere stack module (if different than stack name)
+    :param string template_file: optional name of cloud formation template file to deploy
     :param string region: Name of the region in which to perform the operation
     :param string parameter_files: optional list of yaml parameter files to include
     :param string capabilities: option list of comma separated capabilities to allow
@@ -535,17 +566,13 @@ def plan(stack_name, region, module_name=None, parameter_files=None,
     :param bool delete_change_set: optional delete change set? Default=False
     :return:
     """
-    logger.debug(f"planning stack: {stack_name}. module_name: {module_name}, parameter_files: {parameter_files} "
-                 f"capabilities: {capabilities}, region: {region}")
-    # Import the troposphere module
-    stack = _import_tropo_module(stack_name, module_name)
+    logger.debug(f"planning stack: {stack_name}. module_name: {module_name}, template_file: {template_file}, "
+                 f"parameter_files: {parameter_files}, capabilities: {capabilities}, region: {region}")
 
-    # Get the yaml template file
-    template = stack.get_template()
+    template_body = _load_template(template_file=template_file, module_name=module_name, stack_name=stack_name)
+    template_dict = yaml.load(template_body, Loader=yaml.Loader)
 
-    # Validate the template to make sure it's valid
-    # noinspection PyArgumentList
-    if _template_isvalid(template.to_yaml(), region=region):
+    if _template_isvalid(template_body, region=region):
         logger.debug(f"Template body is valid")
     else:
         logger.error(f"template body is invalid. Exiting")
@@ -559,20 +586,20 @@ def plan(stack_name, region, module_name=None, parameter_files=None,
         if output_type in ['yaml', 'json']:
             logger.info(f"{output_type} TEMPLATE START ------------------------")
             if output_type == "yaml":
-                logger.info(template.to_yaml())
+                logger.info(template_body)
             elif output_type == "json":
-                logger.info(template.to_json())
+                logger.info(template_dict.to_json())
             logger.info(f"{output_type} TEMPLATE END ------------------------")
             return True
         # If the user wants text output
         elif output_type in ['text']:
-            logger.info(f"STACK: {stack_name} creates {len(template.resources)}")
+            logger.info(f"STACK: {stack_name} creates {len(template_dict['Resources'])}")
             logger.info(f"{'#':{2}}) {'action':{8}} {'logical_id':{25}} {'resource_type'}")
             # Go through each resource in the stack
             i = 0
-            for resource in template.resources:
+            for resource in template_dict['Resources']:
                 logger.info(
-                    f"{i + 1:{2}}) {'Create':{8}} {resource:{25}} {template.resources[resource].resource_type}")
+                    f"{i + 1:{2}}) {'Create':{8}} {resource:{25}} {template_dict['Resources'][resource]['Type']}")
                 i += 1
         # invalid output type
         else:
@@ -593,7 +620,7 @@ def plan(stack_name, region, module_name=None, parameter_files=None,
         try:
             change_set_id = cfn_client.create_change_set(
                 StackName=stack_name,
-                TemplateBody=template.to_yaml(),
+                TemplateBody=template_body,
                 Parameters=cfn_parameters,
                 Capabilities=capabilities,
                 ChangeSetName=change_set_name
@@ -635,7 +662,7 @@ def plan(stack_name, region, module_name=None, parameter_files=None,
         # Ok, stack change set is complete, lets get the results
         logger.info(f"STACK: {stack_name} has {len(change_set['Changes'])} detected changes")
         logger.info(f"{'#':{2}}) {'action':{8}} {'logical_id':{20}} {'resource_id':{25}} "
-                     f"{'resource_type':{30}} {'scope':{10}} Replace?")
+                    f"{'resource_type':{30}} {'scope':{10}} Replace?")
         for i in range(len(change_set['Changes'])):
             # For each change item, print the details
             action = change_set['Changes'][i]['ResourceChange']['Action']
@@ -649,7 +676,7 @@ def plan(stack_name, region, module_name=None, parameter_files=None,
             resource_type = change_set['Changes'][i]['ResourceChange']['ResourceType']
             scope = change_set['Changes'][i]['ResourceChange']['Scope']
             logger.info(f"{i + 1:{2}}) {action:{8}} {logical_id:{20}} {resource_id:{25}} "
-                         f"{resource_type:{30}} {str(scope):{10}} {replacement}")
+                        f"{resource_type:{30}} {str(scope):{10}} {replacement}")
             # print(json.dumps(change_set['Changes'][i], indent=2))
         # If the user requested to delete change set (default = True)
         if delete_change_set:
@@ -664,7 +691,7 @@ def plan(stack_name, region, module_name=None, parameter_files=None,
         return True
 
 
-def destroy(stack_name, region, auto_approve=False, **kwargs) -> bool:
+def destroy(stack_name: str, region: str, auto_approve: bool = False, **kwargs) -> bool:
     """
     Deletes a cloud formation stack and logs the resulting output
     :param string stack_name:
@@ -726,64 +753,70 @@ def _parse_args(*args, **kwargs):
     :param args:
     :return:
     """
+    # help strings
     stack_help = "The name of the cloud formation stack on which to perform operation. "
     stack_help_2 = "If a module exists in the current working directory that matches " \
                    "the stack_name and has a get_template() method, module_name is not required"
     module_help = "The name of the python troposphere module that will create the template. " \
                   "Module must have a get_template() method that returns a valid troposphere.Template object"
+    template_help = "The path to a cloud formation template file."
     region_help = f"The name of the AWS region to perform operations. default is the env variable: AWS_DEFAULT_REGION"
     capabilities_help = f"Comma separated list of AWS capabilities. default: {default_capabilities}"
     approve_help = "If set, user will not be prompted to approve changes. default=False"
     output_type_help = "The format of the logging output [text|yaml|json]. default=text"
     param_files_help = "Comma separated yaml parameter files that will be passed to cloud formation as parameters"
-
+    # universal arguments
     parser = argparse.ArgumentParser()
     subparsers = parser.add_subparsers(title='operation')
     parser.add_argument('-v', '--verbose', action='store_true', help="get DEBUG logging")
     parser.add_argument('--version', action='version',
                         version='%(prog)s {version}'.format(version=__version__))
-
+    # apply arguments
     apply_parser = subparsers.add_parser('apply', help="create or update stack")
     apply_parser.add_argument('stack_name', help=stack_help + stack_help_2)
-    apply_parser.add_argument('-m', '--module_name', help=module_help)
+    apply_me_group = apply_parser.add_mutually_exclusive_group(required=True)
+    apply_me_group.add_argument('-m', '--module_name', help=module_help)
+    apply_me_group.add_argument('-t', '--template_file', help=template_help)
     apply_parser.add_argument('-p', '--parameter_files', help=param_files_help)
     apply_parser.add_argument('-c', '--capabilities', default=default_capabilities, help=capabilities_help)
     apply_parser.add_argument('-r', '--region', default=default_region, help=region_help)
     apply_parser.add_argument('--auto_approve', action='store_true', help=approve_help)
     apply_parser.set_defaults(func=apply)
-
+    # plan arguments
     plan_parser = subparsers.add_parser('plan', help="view change plan")
     plan_parser.add_argument('stack_name', help=stack_help + stack_help_2)
-    plan_parser.add_argument('-m', '--module_name', help=module_help)
+    plan_me_group = plan_parser.add_mutually_exclusive_group(required=True)
+    plan_me_group.add_argument('-m', '--module_name', help=module_help)
+    plan_me_group.add_argument('-t', '--template_file', help=template_help)
     plan_parser.add_argument('-p', '--parameter_files', help=param_files_help)
     plan_parser.add_argument('-c', '--capabilities', default=default_capabilities, help=capabilities_help)
     plan_parser.add_argument('-o', '--output_type', default='text', help=output_type_help)
     plan_parser.add_argument('-r', '--region', default=default_region, help=region_help)
     plan_parser.set_defaults(func=plan)
-
+    # destroy arguments
     destroy_parser = subparsers.add_parser('destroy', help="remove stack")
     destroy_parser.add_argument('stack_name', help=stack_help)
     destroy_parser.add_argument('--auto_approve', action='store_true', help=approve_help)
     destroy_parser.add_argument('-r', '--region', default=default_region, help=region_help)
     destroy_parser.set_defaults(func=destroy)
-
+    # list arguments
     list_parser = subparsers.add_parser('list', help="list stacks")
     list_parser.add_argument('stack_name', nargs='?', default=None, help=stack_help)
     list_parser.add_argument('-r', '--region', default=default_region, help=region_help)
     list_parser.set_defaults(func=list_stacks)
-
+    # output arguments
     output_parser = subparsers.add_parser('output', help="view stack outputs")
     output_parser.set_defaults(func=output)
     output_parser.add_argument('stack_name', help=stack_help)
     output_parser.add_argument('-r', '--region', default=default_region, help=region_help)
     output_parser.set_defaults(func=output)
-
+    # parameters arguments
     parameters_parser = subparsers.add_parser('parameters', help="list parameters used in a stack")
     parameters_parser.set_defaults(func=parameters)
     parameters_parser.add_argument('stack_name')
     parameters_parser.add_argument('-r', '--region', default=default_region, help=region_help)
     parameters_parser.set_defaults(func=parameters)
-
+    # reason arguments
     reason_parser = subparsers.add_parser('reason', help="list reasons for failed stack")
     reason_parser.set_defaults(func=reason)
     reason_parser.add_argument('stack_name')
@@ -816,7 +849,6 @@ def main() -> bool:
     except Exception as e:
         logger.critical("Encountered an Exception")
         raise e
-        sys.exit(1)
 
 
 if __name__ == "__main__":

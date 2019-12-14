@@ -27,7 +27,7 @@ class TestHelpers(unittest.TestCase):
 
     def test_load_parameter_files(self):
         # def _load_parameter_files(parameter_files):
-        result = tropoform._load_parameter_files(parameter_files='./test/sample.parms.yaml,./test/sample.parms2.yaml')
+        result = tropoform._load_parameter_files(parameter_files='./tests/fixtures/sample.parms.yaml,./tests/fixtures/sample.parms2.yaml')
         desired = {'Parm1': 'Parameter 1', 'Parm2': "2", 'Parm3': 'Parameter 3', 'Parm4': "4"}
         self.assertEqual(result, desired)
 
@@ -56,14 +56,14 @@ class TestCfn(unittest.TestCase):
         # Use the stack name:
         TestCfn.stack_name = 'sampleTropoformStack'
         # Use the module_name in remote path
-        TestCfn.module_name = './test/sample_tropo_module.py'
+        TestCfn.module_name = './tests/fixtures/sample_tropo_module.py'
         # Load the sample troposphere module
         sys.path.append(os.path.dirname(TestCfn.module_name))
         tropo_module = __import__(os.path.basename(TestCfn.module_name.replace('.py', '')))
         # Generate the template body from the sample tropo module
         TestCfn.template = tropo_module.get_template()
         # Parameter files
-        TestCfn.param_files = './test/sample.parms.yaml,./test/sample.parms2.yaml'
+        TestCfn.param_files = './tests/fixtures/sample.parms.yaml,./tests/fixtures/sample.parms2.yaml'
         # Create a sample stack that we can test
         tropoform.apply(stack_name=TestCfn.stack_name,
                         module_name=TestCfn.module_name,
@@ -179,7 +179,7 @@ class TestParser(unittest.TestCase):
         # Use the stack name
         TestParser.stack_name = 'sampleTropoformStack'
         # Use the module_name in remote path
-        TestParser.module_name = './test/sample_tropo_module.py'
+        TestParser.module_name = './tests/sample_tropo_module.py'
         TestParser.capabilities = 'CAPABILITY_NAMED_IAM'
 
     # CANNOT get this test to run.. TODO: fix this

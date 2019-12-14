@@ -52,10 +52,11 @@ operation:
     reason              list reasons for failed stack
 ```
 
-see detailed usage help for an opration  `tropoform apply -h`
+see detailed usage help for an operation  `tropoform apply -h`
 ```
-usage: tropoform apply [-h] [-m MODULE_NAME] [-p PARAMETER_FILES]
-                          [-c CAPABILITIES] [-r REGION] [--auto_approve]
+usage: tropoform.py apply [-h] (-m MODULE_NAME | -t TEMPLATE_FILE)
+                          [-p PARAMETER_FILES] [-c CAPABILITIES] [-r REGION]
+                          [--auto_approve]
                           stack_name
 
 positional arguments:
@@ -71,6 +72,8 @@ optional arguments:
                         create the template. Module must have a get_template()
                         method that returns a valid troposphere.Template
                         object
+  -t TEMPLATE_FILE, --template_file TEMPLATE_FILE
+                        The path to a cloud formation template file.
   -p PARAMETER_FILES, --parameter_files PARAMETER_FILES
                         Comma separated yaml parameter files that will be
                         passed to cloud formation as parameters
@@ -86,8 +89,13 @@ optional arguments:
 
 ### Usage Example
 
-1. Create a python script using tropoform that has at least one function called get_template()
-   which returns the un-rendered troposphere.Template() object. 
+1. Create a cloud formation template using yaml or json formation
+
+   OR
+
+   Create a python module (script) using [troposphere](https://github.com/cloudtools/troposphere) 
+   that has at least one method called get_template() which returns the un-rendered troposphere.
+   Template() object. 
 
     In the `example.py` script below, we create an IAM user inside the function get_template() and return
     the completed template object
@@ -116,6 +124,16 @@ optional arguments:
     
 3. Run a `tropoform plan` on the stack and see that one IAM User resource will be created
 
+    Using a cloud formation template
+    ```
+    $ tropoform plan myStack -t example_cfn_template.yaml
+    STACK: myStack is not yet deployed
+    STACK: myStack creates 1
+    # ) action   logical_id                resource_type
+     1) Create   testIamUser               AWS::IAM::User
+    ```
+
+    Or using a troposphere module
     ```
     $ tropoform plan myStack -m example.py
     STACK: myStack is not yet deployed
@@ -126,6 +144,20 @@ optional arguments:
     
 4. Use `tropofrom apply` (create) the stack
 
+    Using a cloud formation template
+    ```
+    $ tropoform apply myStack -t example_template.json
+    STACK: myStack, Current Status: None
+    CREATING Stack: myStack with 1 resources
+    Are you sure? [yes|no] yes
+    STACK: myStack, Status: CREATE_IN_PROGRESS - 16:36:10
+    STACK: myStack, Status: CREATE_IN_PROGRESS - 16:36:25
+    STACK: myStack, Status: CREATE_COMPLETE - 16:36:41
+    STACK: myStack deployed 1 resources in 00:00:48
+    STACK OUTPUTS:
+    ```
+    
+    Or using a troposphere module
     ```
     $ tropoform apply myStack -m example.py
     STACK: myStack, Current Status: None
@@ -137,7 +169,7 @@ optional arguments:
     STACK: myStack deployed 1 resources in 00:00:48
     STACK OUTPUTS:
     ```
-    
+   
 5. Use `tropoform list` to see stacks that are applied. Notice it is in status CREATE_COMPLETE
     ```
     $ tropoform list
@@ -193,6 +225,7 @@ optional arguments:
     stack_name           stack_status         drift_status         stack_description
     myStack              UPDATE_COMPLETE      NOT_CHECKED   
     ```
+   
 8. `destroy` the stack when you are done with it
     ```
     $ tropoform destroy myStack

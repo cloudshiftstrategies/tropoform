@@ -1,0 +1,31 @@
+{
+    "Outputs": {
+        "output": {
+            "Value": {
+                "Ref": "testIamUser"
+            }
+        }
+    },
+    "Parameters": {
+        "Parm1": {
+            "Type": "String"
+        },
+        "Parm2": {
+            "Type": "Number"
+        },
+        "Parm3": {
+            "Type": "String"
+        },
+        "Parm4": {
+            "Type": "String"
+        }
+    },
+    "Resources": {
+        "testIamUser": {
+            "Properties": {
+                "UserName": "tropoform_test_user"
+            },
+            "Type": "AWS::IAM::User"
+        }
+    }
+}

@@ -2,8 +2,9 @@ Changelog
 =========
 
 
-(0.3.0)
+0.3.0 (2019-12-14)
 ------------
+- Refactored readme, updated pkg dependencies.
 - Added support for cloud formation templates without using troposphere.
   [Brian Peterson]
 

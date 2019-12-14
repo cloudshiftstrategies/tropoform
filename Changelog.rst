@@ -2,8 +2,15 @@ Changelog
 =========
 
 
-0.2.6 (2019-04-17)
+(0.3.0)
 ------------
+- Added support for cloud formation templates without using troposphere.
+  [Brian Peterson]
+
+
+0.2.6 (2019-04-17)
+------------------
+- Updated changelog. [Brian Peterson]
 - Fixed https://github.com/cloudshiftstrategies/tropoform/issues/4.
   [Brian Peterson]
 

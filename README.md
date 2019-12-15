@@ -1,21 +1,12 @@
 # Tropoform
 
-tropoform is a tool that provides a [terraform](https://terraform.io) like interfaces for standalone AWS
-Cloud Formation stacks or those created by [troposphere](https://github.com/cloudtools/troposphere)
-
-You can create a troposphere script (a python module) that has at least one method: get_template()
-and use tropoform to plan, apply, destroy the cloudformation stack.
+Tropoform is a tool that provides a [terraform](https://terraform.io) like interface for deploying 
+standalone AWS Cloud Formation stacks or stacks created 
+by [troposphere](https://github.com/cloudtools/troposphere). Tropoform provides plan, apply, list, 
+output & destroy operations on cloudformation stacks.
 
 ### Requirements
-* Python3 - sorry, not going to port this back to python 2.x
-* tropoform - can be installed with pip `pip3 install tropoform`
-
-tropoform installs the following additional libraries that might be useful to developing your 
-tropoform scripts
-* [troposphere](https://github.com/cloudtools/troposphere) - to create your cloud formation template. (installed with tropoform)
-* [awacs](https://github.com/cloudtools/awacs) - AWS policy creation library 
-* [boto3](https://github.com/boto/boto3) - the python AWS SDK
-
+* Python3.6+
 
 ### Installation
 To install the latest version of tropoform
@@ -417,7 +408,6 @@ gitchangelog > Changelog.rst
 git commit -am "updated changelog"
 git tag X.Y.Z -m "xxx"
 git push && git push --tags
-git commit -m "updated 
 
 # Publish to PyPy
 twine upload --repository test dist/tropoform-X.Y.Z*

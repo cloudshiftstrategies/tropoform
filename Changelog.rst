@@ -2,8 +2,9 @@ Changelog
 =========
 
 
-(unreleased)
+0.3.4 (2019-12-18)
 ------------
+- Updated version. [Brian Peterson]
 - Fixed bug on updated with RoleARN. [Brian Peterson]
 
 

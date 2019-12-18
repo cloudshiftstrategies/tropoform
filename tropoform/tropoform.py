@@ -2,7 +2,7 @@
 """
 Script to manage troposphere templates like terraform
 """
-__version__ = '0.3.1'
+__version__ = '0.3.2'
 
 import boto3
 from datetime import datetime
@@ -439,7 +439,7 @@ def reason(stack_name: str, region: str, profile: str = None, **kwargs) -> bool:
 
 def apply(stack_name: str, region: str, module_name: str = None, template_file: str = None,
           parameter_files: str = None, capabilities: str = default_capabilities, auto_approve: bool = False,
-          role_arn: str = None, profile: str = None,
+          role_arn: str = None, profile: str = None, **kwargs
           ) -> bool:
     """
     Creates/Updates a cloud formation stack. Logs output
@@ -579,7 +579,7 @@ def apply(stack_name: str, region: str, module_name: str = None, template_file: 
 
 def plan(stack_name: str, region: str, module_name: str = None, template_file: str = None, parameter_files: str = None,
          capabilities: str = default_capabilities, output_type: str = 'text', delete_change_set: bool = True,
-         profile: str = None,
+         profile: str = None, **kwargs
          ) -> bool:
     """
     Creates a Change Plan for a cloud formation stack and logs the results
@@ -719,7 +719,7 @@ def plan(stack_name: str, region: str, module_name: str = None, template_file: s
         return True
 
 
-def destroy(stack_name: str, region: str, auto_approve: bool = False, profile: str = None) -> bool:
+def destroy(stack_name: str, region: str, auto_approve: bool = False, profile: str = None, **kwargs) -> bool:
     """
     Deletes a cloud formation stack and logs the resulting output
     :param str stack_name:

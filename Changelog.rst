@@ -2,8 +2,14 @@ Changelog
 =========
 
 
+0.3.3 (2019-12-18)
+---------------
+- Release. [Brian Peterson]
+
+
 0.3.2 (2019-12-18)
 ------------------
+- Updated changelog. [Brian Peterson]
 - Fixed bug where verbose was allowed perameter. [Brian Peterson]
 
 

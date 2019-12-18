@@ -2,7 +2,7 @@
 """
 Script to manage troposphere templates like terraform
 """
-__version__ = '0.3.4'
+__version__ = '0.3.5'
 
 import boto3
 from datetime import datetime
@@ -886,11 +886,8 @@ def main() -> bool:
     logger = _get_logger(args.verbose)
 
     # Run the function defined in the args
-    try:
-        return args.func(**vars(args))
-    except Exception as e:
-        logger.critical("Encountered an Exception")
-        raise e
+    result = args.func(**vars(args))
+    return 0 if result is True else 1
 
 
 if __name__ == "__main__":

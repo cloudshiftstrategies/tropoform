@@ -27,7 +27,8 @@ class TestHelpers(unittest.TestCase):
 
     def test_load_parameter_files(self):
         # def _load_parameter_files(parameter_files):
-        result = tropoform._load_parameter_files(parameter_files='./tests/fixtures/sample.parms.yaml,./tests/fixtures/sample.parms2.yaml')
+        result = tropoform._load_parameter_files(
+            parameter_files='./tests/fixtures/sample.parms.yaml,./tests/fixtures/sample.parms2.yaml')
         desired = {'Parm1': 'Parameter 1', 'Parm2': "2", 'Parm3': 'Parameter 3', 'Parm4': "4"}
         self.assertEqual(result, desired)
 
@@ -38,7 +39,6 @@ class TestHelpers(unittest.TestCase):
 
 
 class TestCfn(unittest.TestCase):
-
     stack_name = None
     module_name = None
     template = None
@@ -65,11 +65,13 @@ class TestCfn(unittest.TestCase):
         # Parameter files
         TestCfn.param_files = './tests/fixtures/sample.parms.yaml,./tests/fixtures/sample.parms2.yaml'
         # Create a sample stack that we can test
-        tropoform.apply(stack_name=TestCfn.stack_name,
-                        module_name=TestCfn.module_name,
-                        parameter_files=TestCfn.param_files,
-                        region=TestCfn.region,
-                        auto_approve=True)
+        result = tropoform.apply(stack_name=TestCfn.stack_name,
+                                 module_name=TestCfn.module_name,
+                                 parameter_files=TestCfn.param_files,
+                                 region=TestCfn.region,
+                                 auto_approve=True)
+        if not result:
+            raise Exception("Unable to create sample stack")
 
     @classmethod
     def tearDownClass(TestCfn) -> None:
@@ -158,6 +160,7 @@ class TestCfn(unittest.TestCase):
         # def destroy(stack_name, region=default_region, auto_approve=False):
         # tested in class setup
         pass
+
 
 # Cant make this work with v0.2.0 tropoform._parse_args.function TODO fix this
 """

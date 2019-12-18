@@ -2,7 +2,7 @@
 """
 Script to manage troposphere templates like terraform
 """
-__version__ = '0.3.0'
+__version__ = '0.3.1'
 
 import boto3
 from datetime import datetime
@@ -82,15 +82,20 @@ def _create_cfn_parameters(parameters_dict: dict) -> list:
     return result
 
 
-def _get_cfn_client(region: str) -> boto3.client:
+def _get_cfn_client(region: str, profile: str = None) -> boto3.client:
     """
     Returns a boto3 cloud formation client in specified region
     :param str region: AWS region name
+    :param str profile: Name of an AWS named profile to use for credentials
     :return boto3.client
     """
     logger.debug(f"Creating Cloudformation client in region {region}")
+    if profile:
+        session = boto3.Session(profile_name=profile)
+    else:
+        session = boto3.Session()
     try:
-        cfn_client: client = boto3.client("cloudformation", region_name=region)
+        cfn_client: client = session.client("cloudformation", region_name=region)
     except Exception as e:
         logger.error("unable to create a cloud formation client resource")
         logger.error(e)
@@ -101,15 +106,16 @@ def _get_cfn_client(region: str) -> boto3.client:
     return cfn_client
 
 
-def _get_stack_status(stack_name: str, region: str) -> Optional[str]:
+def _get_stack_status(stack_name: str, region: str, profile: str = None) -> Optional[str]:
     """
     Returns the status of a stack. None if not deployed
     :param str stack_name: Name of the stack to check
     :param str region: Name of the aws region
+    :param str profile: Name of an AWS named profile to use for credentials
     :return: str : Status of stack, None if not deployed
     """
     logger.debug(f"Getting stack status for {stack_name} in {region}")
-    cfn_client = _get_cfn_client(region=region)
+    cfn_client = _get_cfn_client(region=region, profile=profile)
     try:
         result = cfn_client.describe_stacks(StackName=stack_name)
     except ClientError as e:
@@ -121,15 +127,15 @@ def _get_stack_status(stack_name: str, region: str) -> Optional[str]:
     return result['Stacks'][0]['StackStatus']
 
 
-def _stack_is_complete(stack_name: str, region: str) -> bool:
+def _stack_is_complete(stack_name: str, region: str, profile: str = None) -> bool:
     """
     Returns true if stack is in completed state, else returns false
-    :param string stack_name: Name of the stack
-    :param string region: Name of the region to perform operation
+    :param str stack_name: Name of the stack
+    :param str region: Name of the region to perform operation
     :return: True if is in completed state, else false
     """
     logger.debug(f"Checking if stack {stack_name} in region {region} is in completed state")
-    stack_status = _get_stack_status(stack_name, region=region)
+    stack_status = _get_stack_status(stack_name, region=region, profile=profile)
     if not stack_status:
         logger.debug(f"STACK: {stack_name} has no status. not complete")
         return False
@@ -140,15 +146,16 @@ def _stack_is_complete(stack_name: str, region: str) -> bool:
     return False
 
 
-def _get_stack_outputs(stack_name: str, region: str) -> list:
+def _get_stack_outputs(stack_name: str, region: str, profile: str = None) -> list:
     """
     Returns list stack outputs
-    :param string stack_name: Name of the stack to query
-    :param string region: Name of the region to perform operation
+    :param str stack_name: Name of the stack to query
+    :param str region: Name of the region to perform operation
+    :param str profile: Name of an AWS named profile to use for credentials
     :return: list of stack outputs
     """
     logger.debug(f"Getting stack {stack_name} outputs in region {region}")
-    cfn_client = _get_cfn_client(region=region)
+    cfn_client = _get_cfn_client(region=region, profile=profile)
     try:
         result = cfn_client.describe_stacks(StackName=stack_name)
     except ClientError as e:
@@ -165,15 +172,16 @@ def _get_stack_outputs(stack_name: str, region: str) -> list:
         return result['Stacks'][0]['Outputs']
 
 
-def _get_stack_resources(stack_name: str, region: str) -> list:
+def _get_stack_resources(stack_name: str, region: str, profile: str = None) -> list:
     """
     Returns list stack resources
-    :param string stack_name: Name of the stack to query
-    :param string region: Name of the region to perform operation
+    :param str stack_name: Name of the stack to query
+    :param str region: Name of the region to perform operation
+    :param str profile: Name of an AWS named profile to use for credentials
     :return: list of stack resources
     """
     logger.debug(f"Getting stack {stack_name} resources in region {region}")
-    cfn_client = _get_cfn_client(region=region)
+    cfn_client = _get_cfn_client(region=region, profile=profile)
     try:
         result = cfn_client.describe_stack_resources(StackName=stack_name)
     except Exception as e:
@@ -211,15 +219,16 @@ def _load_parameter_files(parameter_files: str) -> Optional[dict]:
     return result
 
 
-def _template_isvalid(template_body: str, region: str) -> bool:
+def _template_isvalid(template_body: str, region: str, profile: str = None) -> bool:
     """
     Validates whether template body is valid
-    :param string template_body:
-    :param string region: Name of the region to perform operation
+    :param str template_body:
+    :param str region: Name of the region to perform operation
+    :param str profile: Name of an AWS named profile to use for credentials
     :return: bool True if valid
     """
     logger.debug(f"checking if template is valid in region {region}")
-    cfn_client = _get_cfn_client(region=region)
+    cfn_client = _get_cfn_client(region=region, profile=profile)
     try:
         cfn_client.validate_template(TemplateBody=template_body)
     except Exception as e:
@@ -246,15 +255,16 @@ def _fmt_timedelta(time_delta: datetime.time):
     return f"{hours}:{minutes}:{seconds}"
 
 
-def _get_failed_stack_events(stack_name: str, region: str) -> list:
+def _get_failed_stack_events(stack_name: str, region: str, profile: str = None) -> list:
     """
     Returns a list of stack events that have status that includes FAILED
-    :param string stack_name:
-    :param string region: Name of the region in which to perform the operation
+    :param str stack_name:
+    :param str region: Name of the region in which to perform the operation
+    :param str profile: Name of an AWS named profile to use for credentials
     :return: list of failed events
     """
     logger.debug(f"getting stack {stack_name} failure events in region {region}")
-    cfn_client = _get_cfn_client(region=region)
+    cfn_client = _get_cfn_client(region=region, profile=profile)
     try:
         events = cfn_client.describe_stack_events(StackName=stack_name)
     except Exception as e:
@@ -317,19 +327,20 @@ def _load_template(template_file: str = None, module_name: str = None, stack_nam
     return template_body
 
 
-def list_stacks(stack_name: str = None, region: str = None, **kwargs) -> bool:
+def list_stacks(stack_name: str = None, region: str = None, profile: str = None, **kwargs) -> bool:
     """
     Logs deployed stacks and their status
-    :param string stack_name: optional stack name. Default is none
+    :param str stack_name: optional stack name. Default is none
     :param region: optional region. Default is default_region
+    :param str profile: Name of an AWS named profile to use for credentials
     :return: True if successful
     """
-    cfn_client = _get_cfn_client(region=region)
+    cfn_client = _get_cfn_client(region=region, profile=profile)
     if stack_name:
         logger.debug(f"Logging stack {stack_name} in region {region}")
-        if not _stack_is_complete(stack_name=stack_name, region=region):
+        if not _stack_is_complete(stack_name=stack_name, region=region, profile=profile):
             logger.error(f"STACK: {stack_name} "
-                         f"in status: {_get_stack_status(stack_name=stack_name, region=region)}. Exiting")
+                         f"in status: {_get_stack_status(stack_name=stack_name, region=region, profile=profile)}. Exiting")
             return False
         try:
             stacks = cfn_client.describe_stacks(StackName=stack_name)
@@ -359,19 +370,20 @@ def list_stacks(stack_name: str = None, region: str = None, **kwargs) -> bool:
     return True
 
 
-def parameters(stack_name: str, region: str, **kwargs) -> bool:
+def parameters(stack_name: str, region: str, profile: str = None, **kwargs) -> bool:
     """
     Logs the parameters deployed with a stack
-    :param string stack_name:
-    :param string region: Name of the region in which to perform the operation
+    :param str stack_name:
+    :param str region: Name of the region in which to perform the operation
+    :param str profile: Name of an AWS named profile to use for credentials
     :return: True if successful
     """
     logger.debug(f"Logging stack {stack_name} parameters in region {region}")
-    if not _stack_is_complete(stack_name=stack_name, region=region):
+    if not _stack_is_complete(stack_name=stack_name, region=region, profile=profile):
         logger.error(f"STACK: {stack_name} not in completed status. "
-                     f"{_get_stack_status(stack_name=stack_name, region=region)}")
+                     f"{_get_stack_status(stack_name=stack_name, region=region, profile=profile)}")
         return False
-    cfn_client = _get_cfn_client(region=region)
+    cfn_client = _get_cfn_client(region=region, profile=profile)
     try:
         stack = cfn_client.describe_stacks(StackName=stack_name)['Stacks'][0]
     except Exception as e:
@@ -384,33 +396,34 @@ def parameters(stack_name: str, region: str, **kwargs) -> bool:
     return True
 
 
-def output(stack_name: str, region: str, **kwargs) -> bool:
+def output(stack_name: str, region: str, profile: str = None, **kwargs) -> bool:
     """
     Logs outputs of a cloud formation stack
-    :param string stack_name:
-    :param string region: Name of the region to perform operation
+    :param str stack_name:
+    :param str region: Name of the region to perform operation
+    :param str profile: Name of an AWS named profile to use for credentials
     :return: bool True if successful
     """
     logger.debug(f"Logging stack {stack_name} outputs in region {region}")
-    if not _stack_is_complete(stack_name=stack_name, region=region):
+    if not _stack_is_complete(stack_name=stack_name, region=region, profile=profile):
         logger.error(f"STACK: {stack_name} "
-                     f"in status: {_get_stack_status(stack_name=stack_name, region=region)}. Exiting")
+                     f"in status: {_get_stack_status(stack_name=stack_name, region=region, profile=profile)}. Exiting")
         return False
     logger.info("STACK OUTPUTS:")
-    for stack_output in _get_stack_outputs(stack_name=stack_name, region=region):
+    for stack_output in _get_stack_outputs(stack_name=stack_name, region=region, profile=profile):
         logger.info(f"{stack_output['OutputKey']:{20}} = {stack_output['OutputValue']}")
     return True
 
 
-def reason(stack_name: str, region: str, **kwargs) -> bool:
+def reason(stack_name: str, region: str, profile: str = None, **kwargs) -> bool:
     """
     Logs the reason for a failed stack to info
-    :param string stack_name:
-    :param string region: Name of the region in which to perform the operation
+    :param str stack_name:
+    :param str region: Name of the region in which to perform the operation
     :return: True if successful
     """
     logger.debug(f"Logging stack {stack_name} failure reason in region {region}")
-    events = _get_failed_stack_events(stack_name=stack_name, region=region)
+    events = _get_failed_stack_events(stack_name=stack_name, region=region, profile=profile)
     logger.info(f"STACK {stack_name} create/update FAILED due to the following stack events:")
     if len(events) > 0:
         logger.info(f"{'UTC time':{10}} {'ResourceStatus':{15}} {'ResourceType':{35}} "
@@ -426,16 +439,19 @@ def reason(stack_name: str, region: str, **kwargs) -> bool:
 
 def apply(stack_name: str, region: str, module_name: str = None, template_file: str = None,
           parameter_files: str = None, capabilities: str = default_capabilities, auto_approve: bool = False,
-          **kwargs) -> bool:
+          role_arn: str = None, profile: str = None,
+          ) -> bool:
     """
     Creates/Updates a cloud formation stack. Logs output
-    :param string stack_name: name of stack to create. If module_name not given, uses python module by same name in cwd
-    :param string module_name: name of the python troposphere module to import (if different than stack_name)
-    :param string template_file: optional name of cloud formation template file to deploy
-    :param string capabilities: comma separated list of capabilities
-    :param string region: Name of the region in which to perform the operation
-    :param string parameter_files: optional comma separated list of parameter files
+    :param str stack_name: name of stack to create. If module_name not given, uses python module by same name in cwd
+    :param str module_name: name of the python troposphere module to import (if different than stack_name)
+    :param str template_file: optional name of cloud formation template file to deploy
+    :param str capabilities: comma separated list of capabilities
+    :param str region: Name of the region in which to perform the operation
+    :param str parameter_files: optional comma separated list of parameter files
     :param bool auto_approve: to eliminate user prompt set to True, default = False
+    :param str role_arn: the role cloudformation will assume for create/update stack operations
+    :param str profile: Name of an AWS named profile to use for credentials
     :return: True if successful
     """
     logger.debug(f"applying stack: {stack_name}. module_name: {module_name}, parameter_files: {parameter_files} "
@@ -452,11 +468,11 @@ def apply(stack_name: str, region: str, module_name: str = None, template_file: 
     capabilities = capabilities.split(",")
 
     # Get the current stack status
-    stack_status = _get_stack_status(stack_name=stack_name, region=region)
+    stack_status = _get_stack_status(stack_name=stack_name, region=region, profile=profile)
     logger.info(f"STACK: {stack_name}, Current Status: {stack_status}")
 
     # Create a cloud formation client
-    cfn_client = _get_cfn_client(region=region)
+    cfn_client = _get_cfn_client(region=region, profile=profile)
 
     # See if Stack is deployed
     if stack_status is None:
@@ -474,12 +490,21 @@ def apply(stack_name: str, region: str, module_name: str = None, template_file: 
 
         # Create the stack
         try:
-            cfn_client.create_stack(
-                StackName=stack_name,
-                TemplateBody=template_body,
-                Parameters=cfn_parameters,
-                Capabilities=capabilities,
-            )
+            if role_arn:
+                cfn_client.create_stack(
+                    StackName=stack_name,
+                    TemplateBody=template_body,
+                    Parameters=cfn_parameters,
+                    Capabilities=capabilities,
+                    RoleARN=role_arn
+                )
+            else:
+                cfn_client.create_stack(
+                    StackName=stack_name,
+                    TemplateBody=template_body,
+                    Parameters=cfn_parameters,
+                    Capabilities=capabilities,
+                )
         except Exception as e:
             logger.error(f"STACK {stack_name} NOT CREATED. Error occurred")
             logger.error(e)
@@ -487,7 +512,7 @@ def apply(stack_name: str, region: str, module_name: str = None, template_file: 
         action = "deployed"
 
     # See if stack is already in a deployed (*_COMPLETE) status
-    elif _stack_is_complete(stack_name=stack_name, region=region):
+    elif _stack_is_complete(stack_name=stack_name, region=region, profile=profile):
         # Stack is already deployed and ready for update
         # Generate the yaml file
         # template = stack.get_template().to_yaml()
@@ -507,6 +532,7 @@ def apply(stack_name: str, region: str, module_name: str = None, template_file: 
                 TemplateBody=template_body,
                 Parameters=cfn_parameters,
                 Capabilities=capabilities,
+                RoleArn=role_arn
             )
         except Exception as e:
             if 'No updates are to be performed' in e.__str__():
@@ -525,9 +551,9 @@ def apply(stack_name: str, region: str, module_name: str = None, template_file: 
         return False
 
     # Wait for stack to enter complete status
-    while not _stack_is_complete(stack_name=stack_name, region=region):
+    while not _stack_is_complete(stack_name=stack_name, region=region, profile=profile):
         time.sleep(15)
-        stack_status = _get_stack_status(stack_name=stack_name, region=region)
+        stack_status = _get_stack_status(stack_name=stack_name, region=region, profile=profile)
         logger.info(f"STACK: {stack_name}, Status: {stack_status} - {datetime.now().strftime('%H:%M:%S')}")
 
     # Stop the timer
@@ -537,33 +563,35 @@ def apply(stack_name: str, region: str, module_name: str = None, template_file: 
     # If stack_status is in FAILED state or ROLLBACK, determine reason from events
     if "FAILED" in stack_status or "ROLLBACK" in stack_status:
         logger.warning(f"STACK: {stack_name} not {action} and is in status {stack_status}")
-        reason(stack_name=stack_name, region=region)
+        reason(stack_name=stack_name, region=region, profile=profile)
         return False
 
     # Print number of resources deployed
     logger.info(f"STACK: {stack_name} {action} "
-                f"{len(_get_stack_resources(stack_name=stack_name, region=region))} resources "
+                f"{len(_get_stack_resources(stack_name=stack_name, region=region, profile=profile))} resources "
                 f"in {duration}")
 
     # Print outputs
-    output(stack_name=stack_name, region=region)
+    output(stack_name=stack_name, region=region, profile=profile)
 
     return True
 
 
 def plan(stack_name: str, region: str, module_name: str = None, template_file: str = None, parameter_files: str = None,
          capabilities: str = default_capabilities, output_type: str = 'text', delete_change_set: bool = True,
-         **kwargs) -> bool:
+         profile: str = None,
+         ) -> bool:
     """
     Creates a Change Plan for a cloud formation stack and logs the results
-    :param string stack_name: stack name
-    :param string module_name: optional name of troposphere stack module (if different than stack name)
-    :param string template_file: optional name of cloud formation template file to deploy
-    :param string region: Name of the region in which to perform the operation
-    :param string parameter_files: optional list of yaml parameter files to include
-    :param string capabilities: option list of comma separated capabilities to allow
-    :param string output_type: optional [text|yaml|json], default is text
+    :param str stack_name: stack name
+    :param str module_name: optional name of troposphere stack module (if different than stack name)
+    :param str template_file: optional name of cloud formation template file to deploy
+    :param str region: Name of the region in which to perform the operation
+    :param str parameter_files: optional list of yaml parameter files to include
+    :param str capabilities: option list of comma separated capabilities to allow
+    :param str output_type: optional [text|yaml|json], default is text
     :param bool delete_change_set: optional delete change set? Default=False
+    :param str profile: Name of an AWS named profile to use for credentials
     :return:
     """
     logger.debug(f"planning stack: {stack_name}. module_name: {module_name}, template_file: {template_file}, "
@@ -572,14 +600,14 @@ def plan(stack_name: str, region: str, module_name: str = None, template_file: s
     template_body = _load_template(template_file=template_file, module_name=module_name, stack_name=stack_name)
     template_dict = yaml.load(template_body, Loader=yaml.Loader)
 
-    if _template_isvalid(template_body, region=region):
+    if _template_isvalid(template_body, region=region, profile=profile):
         logger.debug(f"Template body is valid")
     else:
         logger.error(f"template body is invalid. Exiting")
         return False
 
     # See if the stack is already deployed
-    if not _stack_is_complete(stack_name=stack_name, region=region):
+    if not _stack_is_complete(stack_name=stack_name, region=region, profile=profile):
         # Stack is not deployed yet
         logger.info(f"STACK: {stack_name} is not yet deployed")
         # If the user wants a dump of the template in json or yaml, do that then exit
@@ -613,7 +641,7 @@ def plan(stack_name: str, region: str, module_name: str = None, template_file: s
         # split supplied capabilities string
         capabilities = capabilities.split(",")
         # Create a cfn client
-        cfn_client = _get_cfn_client(region=region)
+        cfn_client = _get_cfn_client(region=region, profile=profile)
         # Generate a unique change set name
         change_set_name = 'change-' + datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
         # Create a change stack set
@@ -691,25 +719,26 @@ def plan(stack_name: str, region: str, module_name: str = None, template_file: s
         return True
 
 
-def destroy(stack_name: str, region: str, auto_approve: bool = False, **kwargs) -> bool:
+def destroy(stack_name: str, region: str, auto_approve: bool = False, profile: str = None) -> bool:
     """
     Deletes a cloud formation stack and logs the resulting output
-    :param string stack_name:
-    :param string region: Name of the region to perform operation
+    :param str stack_name:
+    :param str region: Name of the region to perform operation
     :param bool auto_approve: If True, prompt user for approval
+    :param str profile: Name of an AWS named profile to use for credentials
     :return: True if successful
     """
     logger.debug(f"destroying stack: {stack_name}, region: {region}, auto_approve: {auto_approve}")
     # Get a cfn client
-    cfn_client = _get_cfn_client(region=region)
+    cfn_client = _get_cfn_client(region=region, profile=profile)
     # Get the stack status
     stack_status = _get_stack_status(stack_name=stack_name, region=region)
     # If it is not in a *_COMPLETE state, bail out
-    if not _stack_is_complete(stack_name=stack_name, region=region):
+    if not _stack_is_complete(stack_name=stack_name, region=region, profile=profile):
         logger.error(f"STACK: {stack_name} in status {stack_status}. Cant delete now. Exiting")
         return False
     # See how many resources are deployed
-    resource_count = len(_get_stack_resources(stack_name=stack_name, region=region))
+    resource_count = len(_get_stack_resources(stack_name=stack_name, region=region, profile=profile))
     logger.info(f"DELETING STACK: {stack_name} with {resource_count} resources")
     # Get user approval
     if not auto_approve:
@@ -726,9 +755,9 @@ def destroy(stack_name: str, region: str, auto_approve: bool = False, **kwargs) 
         logger.error(e)
         return False
 
-    while not _stack_is_complete(stack_name=stack_name, region=region):
+    while not _stack_is_complete(stack_name=stack_name, region=region, profile=profile):
         time.sleep(15)
-        stack_status = _get_stack_status(stack_name=stack_name, region=region)
+        stack_status = _get_stack_status(stack_name=stack_name, region=region, profile=profile)
         logger.info(f"STACK: {stack_name}, Status: {stack_status} - {datetime.now().strftime('%H:%M:%S')}")
         if not stack_status:
             break
@@ -741,7 +770,7 @@ def destroy(stack_name: str, region: str, auto_approve: bool = False, **kwargs) 
     # If stack_status is in FAILED state or ROLLBACK, determine reason from events
     if stack_status and ("FAILED" in stack_status or "ROLLBACK" in stack_status):
         logger.warning(f"STACK: {stack_name} not deleted and is in status {stack_status}")
-        reason(stack_name=stack_name, region=region)
+        reason(stack_name=stack_name, region=region, profile=profile)
         return False
 
     return True
@@ -765,12 +794,16 @@ def _parse_args(*args, **kwargs):
     approve_help = "If set, user will not be prompted to approve changes. default=False"
     output_type_help = "The format of the logging output [text|yaml|json]. default=text"
     param_files_help = "Comma separated yaml parameter files that will be passed to cloud formation as parameters"
-    # universal arguments
+    role_arn = "The arn of an AWS IAM role that AWS CloudFormation assumes to create/update the stack"
+    profile = "Name of an AWS named profile to use for credentials"
+    # Create parser
     parser = argparse.ArgumentParser()
-    subparsers = parser.add_subparsers(title='operation')
-    parser.add_argument('-v', '--verbose', action='store_true', help="get DEBUG logging")
+    # universal arguments
     parser.add_argument('--version', action='version',
                         version='%(prog)s {version}'.format(version=__version__))
+    parser.add_argument("--profile", help=profile)
+    parser.add_argument('-v', '--verbose', action='store_true', help="get DEBUG logging")
+    subparsers = parser.add_subparsers(title='operation')
     # apply arguments
     apply_parser = subparsers.add_parser('apply', help="create or update stack")
     apply_parser.add_argument('stack_name', help=stack_help + stack_help_2)
@@ -780,6 +813,7 @@ def _parse_args(*args, **kwargs):
     apply_parser.add_argument('-p', '--parameter_files', help=param_files_help)
     apply_parser.add_argument('-c', '--capabilities', default=default_capabilities, help=capabilities_help)
     apply_parser.add_argument('-r', '--region', default=default_region, help=region_help)
+    apply_parser.add_argument('-a', '--role_arn', default=None, help=role_arn)
     apply_parser.add_argument('--auto_approve', action='store_true', help=approve_help)
     apply_parser.set_defaults(func=apply)
     # plan arguments

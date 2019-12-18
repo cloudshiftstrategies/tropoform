@@ -2,11 +2,27 @@ Changelog
 =========
 
 
+0.3.1 (2019-12-18)
+------------------
+- Added support for named profiles and RoleArn. [Brian Peterson]
+- Fixed typos in readme. [Brian Peterson]
+
+
 0.3.0 (2019-12-14)
-------------
-- Refactored readme, updated pkg dependencies.
+------------------
+- Updated changelog. [Brian Peterson]
+- Refactored readme, fixed dependancies. [Brian Peterson]
+- Updated changelog. [Brian Peterson]
 - Added support for cloud formation templates without using troposphere.
   [Brian Peterson]
+- Merge pull request #8 from cloudshiftstrategies/template_support.
+  [Brian Peterson]
+
+  added support for cloudformation template
+- Added support for cloudformation template. [Brian Peterson]
+- Delete Pipfile.lock. [Brian Peterson]
+
+  Known high severity security vulnerability detected in urllib3 < 1.24.2
 
 
 0.2.6 (2019-04-17)

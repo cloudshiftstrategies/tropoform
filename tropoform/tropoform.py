@@ -533,7 +533,7 @@ def apply(stack_name: str, region: str, module_name: str = None, template_file: 
                     TemplateBody=template_body,
                     Parameters=cfn_parameters,
                     Capabilities=capabilities,
-                    RoleArn=role_arn
+                    RoleARN=role_arn
                 )
             else:
                 cfn_client.update_stack(

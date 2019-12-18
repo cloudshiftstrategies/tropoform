@@ -2,8 +2,14 @@ Changelog
 =========
 
 
-0.3.4 (2019-12-18)
+0.3.5 (2019-12-18)
 ------------
+- Fixed error return code bug. [Brian Peterson]
+
+
+0.3.4 (2019-12-18)
+------------------
+- Updated changelog. [Brian Peterson]
 - Updated version. [Brian Peterson]
 - Fixed bug on updated with RoleARN. [Brian Peterson]
 

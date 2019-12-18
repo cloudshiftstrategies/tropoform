@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name='tropoform',
-    version='0.3.2',
+    version='0.3.3',
     entry_points={'console_scripts': ['tropoform=tropoform.tropoform:main']},
     author="Brian Peterson",
     author_email="brian.peterson@cloudshift.cc",

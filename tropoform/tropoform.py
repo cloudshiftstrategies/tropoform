@@ -2,7 +2,7 @@
 """
 Script to manage troposphere templates like terraform
 """
-__version__ = '0.3.2'
+__version__ = '0.3.3'
 
 import boto3
 from datetime import datetime
@@ -527,13 +527,21 @@ def apply(stack_name: str, region: str, module_name: str = None, template_file: 
         start = datetime.now()
         # Update the stack
         try:
-            cfn_client.update_stack(
-                StackName=stack_name,
-                TemplateBody=template_body,
-                Parameters=cfn_parameters,
-                Capabilities=capabilities,
-                RoleArn=role_arn
-            )
+            if role_arn:
+                cfn_client.update_stack(
+                    StackName=stack_name,
+                    TemplateBody=template_body,
+                    Parameters=cfn_parameters,
+                    Capabilities=capabilities,
+                    RoleArn=role_arn
+                )
+            else:
+                cfn_client.update_stack(
+                    StackName=stack_name,
+                    TemplateBody=template_body,
+                    Parameters=cfn_parameters,
+                    Capabilities=capabilities,
+                )
         except Exception as e:
             if 'No updates are to be performed' in e.__str__():
                 # No updates required. Continue without error

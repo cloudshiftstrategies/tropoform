@@ -2,8 +2,14 @@ Changelog
 =========
 
 
+0.3.2 (2019-12-18)
+------------------
+- Fixed bug where verbose was allowed perameter. [Brian Peterson]
+
+
 0.3.1 (2019-12-18)
 ------------------
+- Updated changelog. [Brian Peterson]
 - Added support for named profiles and RoleArn. [Brian Peterson]
 - Fixed typos in readme. [Brian Peterson]
 

@@ -208,7 +208,7 @@ def _load_parameter_files(parameter_files: str) -> Optional[dict]:
     for parameter_file in parameter_files:
         logger.debug(f"loading parameter file: {parameter_file}")
         try:
-            data = yaml.load(open(parameter_file, "r"), Loader=yaml.Loader)
+            data = yaml.load(open(parameter_file, "r"), Loader=yaml.BaseLoader)
         except Exception as e:
             logger.error(f"unable to load yaml file: {parameter_file}")
             logger.error(e)
@@ -459,7 +459,7 @@ def apply(stack_name: str, region: str, module_name: str = None, template_file: 
 
     # Import the troposphere module
     template_body = _load_template(template_file=template_file, module_name=module_name, stack_name=stack_name)
-    template_dict = yaml.load(template_body, Loader=yaml.Loader)
+    template_dict = yaml.load(template_body, Loader=yaml.BaseLoader)
     # stack = _import_tropo_module(stack_name, module_name)
 
     # Generate cloud formation parameters from supplied input files
@@ -606,7 +606,7 @@ def plan(stack_name: str, region: str, module_name: str = None, template_file: s
                  f"parameter_files: {parameter_files}, capabilities: {capabilities}, region: {region}")
 
     template_body = _load_template(template_file=template_file, module_name=module_name, stack_name=stack_name)
-    template_dict = yaml.load(template_body, Loader=yaml.Loader)
+    template_dict = yaml.load(template_body, Loader=yaml.BaseLoader)
 
     if _template_isvalid(template_body, region=region, profile=profile):
         logger.debug(f"Template body is valid")

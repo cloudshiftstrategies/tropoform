@@ -3,15 +3,11 @@ name = "pypi"
 url = "https://pypi.org/simple"
 verify_ssl = true
 
-[dev-packages]
-twine = "*"
-gitchangelog = "*"
-pipdeptree = "*"
-commitizen = "*"
-python-semantic-release = "*"
-
 [packages]
 tropoform = {editable = true,path = "."}
+
+[dev-packages]
+commitizen = "*"
 
 [requires]
 python_version = "3.6"

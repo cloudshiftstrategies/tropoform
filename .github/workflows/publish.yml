@@ -1,4 +1,4 @@
-name: Upload Python Package
+name: Publish Python Package
 
 on:
   release:
@@ -25,6 +25,7 @@ jobs:
         TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
         GH_TOKEN: ${{ secrets.GH_TOKEN }}
       run: |
-        semantic-release publish
+        pipenv run semantic-release changelog --post
+        pipenv run semantic-release publish
 #        python setup.py sdist bdist_wheel
 #        twine upload dist/*

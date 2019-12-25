@@ -40,5 +40,4 @@ jobs:
         run: |
           git config --global user.email "info@cloudhift.cc"
           git config --global user.name "Cloud Shift Strategies"
-          semantic-release changelog --post
           semantic-release publish

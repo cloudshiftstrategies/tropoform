@@ -2,7 +2,7 @@
 """
 Script to manage troposphere templates like terraform
 """
-__version__ = '0.3.5'
+__version__ = '0.3.6'
 
 import boto3
 from datetime import datetime
@@ -740,7 +740,7 @@ def destroy(stack_name: str, region: str, auto_approve: bool = False, profile: s
     # Get a cfn client
     cfn_client = _get_cfn_client(region=region, profile=profile)
     # Get the stack status
-    stack_status = _get_stack_status(stack_name=stack_name, region=region)
+    stack_status = _get_stack_status(stack_name=stack_name, region=region, profile=profile)
     # If it is not in a *_COMPLETE state, bail out
     if not _stack_is_complete(stack_name=stack_name, region=region, profile=profile):
         logger.error(f"STACK: {stack_name} in status {stack_status}. Cant delete now. Exiting")

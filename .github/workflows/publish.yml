@@ -3,6 +3,7 @@ name: Upload Python Package
 on:
   release:
     types: [created]
+    branches: [master]
 
 jobs:
   deploy:
@@ -17,11 +18,13 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install pipenv
-        pipenv install -dev
+        pipenv --bare install --dev
     - name: Build and publish
       env:
         TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
         TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
+        GH_TOKEN: ${{ secrets.GH_TOKEN }}
       run: |
-        python setup.py sdist bdist_wheel
-        twine upload dist/*
+        semantic-release publish
+#        python setup.py sdist bdist_wheel
+#        twine upload dist/*

@@ -7,13 +7,11 @@ verify_ssl = true
 twine = "*"
 gitchangelog = "*"
 pipdeptree = "*"
+commitizen = "*"
+python-semantic-release = "*"
 
 [packages]
-boto3 = "*"
-botocore = "*"
-troposphere = {extras = ["policy"],version = "*"}
-PyYAML = "*"
-colorlog = "*"
+tropoform = {editable = true,path = "."}
 
 [requires]
 python_version = "3.6"

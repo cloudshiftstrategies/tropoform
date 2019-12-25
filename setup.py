@@ -1,11 +1,12 @@
 import setuptools
-
+from tropoform.tropoform import __version__
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
+
 setuptools.setup(
     name='tropoform',
-    version='0.3.5',
+    version=__version__,
     entry_points={'console_scripts': ['tropoform=tropoform.tropoform:main']},
     author="Brian Peterson",
     author_email="brian.peterson@cloudshift.cc",

@@ -4,7 +4,12 @@ url = "https://pypi.org/simple"
 verify_ssl = true
 
 [packages]
-tropoform = {editable = true,path = "."}
+boto3 = "*"
+botocore = "*"
+troposphere = "*"
+awacs = "*"
+PyYAML = "*"
+colorlog = "*"
 
 [dev-packages]
 commitizen = "*"

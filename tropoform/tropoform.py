@@ -2,7 +2,7 @@
 """
 Script to manage troposphere templates like terraform
 """
-__version__ = '0.3.6'
+__version__ = '0.3.7'
 
 import boto3
 from datetime import datetime

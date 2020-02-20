@@ -366,6 +366,7 @@ def list_stacks(stack_name: str = None, region: str = None, profile: str = None,
         else:
             stack_description = ''
         logger.info(f"{stack_name:{20}} {stack_status:{20}} {drift_status:{20}} {stack_description}")
+    # Support more than 100 stacks.. TODO: make this less lame
     next_token = stacks['NextToken'] if 'NextToken' in stacks else None
     while next_token:
         stacks = cfn_client.describe_stacks(NextToken=next_token)

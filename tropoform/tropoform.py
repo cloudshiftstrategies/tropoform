@@ -366,6 +366,19 @@ def list_stacks(stack_name: str = None, region: str = None, profile: str = None,
         else:
             stack_description = ''
         logger.info(f"{stack_name:{20}} {stack_status:{20}} {drift_status:{20}} {stack_description}")
+    next_token = stacks['NextToken'] if 'NextToken' in stacks else None
+    while next_token:
+        stacks = cfn_client.describe_stacks(NextToken=next_token)
+        for stack in stacks['Stacks']:
+            stack_name = stack['StackName']
+            stack_status = stack['StackStatus']
+            drift_status = stack['DriftInformation']['StackDriftStatus']
+            if 'Description' in stack:
+                stack_description = stack['Description']
+            else:
+                stack_description = ''
+            logger.info(f"{stack_name:{20}} {stack_status:{20}} {drift_status:{20}} {stack_description}")
+        next_token = stacks['NextToken'] if 'NextToken' in stacks else None
 
     return True
 
